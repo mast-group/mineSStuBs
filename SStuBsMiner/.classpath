@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.contenttype_3.5.100.v20160418-1621.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.jobs_3.8.0.v20160509-0411.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.resources_3.11.1.v20161107-2032.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.core.runtime_3.12.0.v20160606-1342.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.egit.github.core-4.7.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.common_3.8.0.v20160509-1230.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.equinox.preferences_3.6.1.v20160815-1406.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jdt.core_3.12.2.v20161117-1814.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jdt.launching_3.8.101.v20161111-2014.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.jgit-4.6.1.201703071140-r.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.osgi_3.11.2.v20161107-1947.jar"/>
+	<classpathentry kind="lib" path="lib/org.eclipse.ui.ide_3.12.3.v20170119-0935.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.7.25.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.25.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-3.7.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
