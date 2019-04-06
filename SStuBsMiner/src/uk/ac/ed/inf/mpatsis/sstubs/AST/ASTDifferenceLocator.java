@@ -37,6 +37,12 @@ public class ASTDifferenceLocator {
 	
 
 	@SuppressWarnings("unchecked")
+	/**
+	 * 
+	 * @param left
+	 * @param right
+	 * @return
+	 */
 	public static boolean equals( ASTNode left, ASTNode right ) {
 		// if both are null, they are equal, but if only one, they aren't
 		if (left == null && right == null) {
@@ -96,15 +102,19 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param left
+	 * @param right
+	 * @return
+	 * @throws NullPointerException
+	 */
 	public static SimpleImmutableEntry<ASTNode, ASTNode> getFirstDifferentNode2( ASTNode left, ASTNode right ) throws NullPointerException {
 		// if any of the nodes is null throw a NullPointerException
 		if (left == null || right == null) {
 			throw new NullPointerException();
 		}
-//		if ( left.getNodeType() == 27 ) {
-//			System.out.println( left.structuralPropertiesForType() );
-//			System.out.println( right.structuralPropertiesForType() );
-//		}
+		
 		// if node types are different then the nodes are different.
 		if (left.getNodeType() != right.getNodeType()) {
 			return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
@@ -116,7 +126,7 @@ public class ASTDifferenceLocator {
 		for ( StructuralPropertyDescriptor property : props ) {
 			Object leftVal = left.getStructuralProperty( property );
 			Object rightVal = right.getStructuralProperty( property );
-//			System.out.println( "left: " + leftVal + " property: " + property );
+			
 			if ( leftVal == null && rightVal == null ) {
 				continue;
 			}
@@ -137,9 +147,7 @@ public class ASTDifferenceLocator {
 				// recursively call this function on child nodes
 				SimpleImmutableEntry<ASTNode, ASTNode> childrenDifference = 
 						getFirstDifferentNode( (ASTNode) leftVal, (ASTNode) rightVal );
-				if ( childrenDifference != null ) 
-//					new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
-				return childrenDifference;
+				if ( childrenDifference != null ) return childrenDifference;
 			} else if ( property.isChildListProperty() ) {
 				Iterator<ASTNode> leftValIt = ((Iterable<ASTNode>) leftVal).iterator();
 				Iterator<ASTNode> rightValIt = ((Iterable<ASTNode>) rightVal).iterator();
@@ -156,7 +164,7 @@ public class ASTDifferenceLocator {
 						}
 					}
 				}
-//				System.out.println( differences );
+				
 				// one of the value lists have additional elements
 				if ( leftValIt.hasNext() || rightValIt.hasNext() ) {
 					return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
@@ -173,15 +181,19 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param left
+	 * @param right
+	 * @return
+	 * @throws NullPointerException
+	 */
 	public static SimpleImmutableEntry<ASTNode, ASTNode> getFirstDifferentNode( ASTNode left, ASTNode right ) throws NullPointerException {
 		// if any of the nodes is null throw a NullPointerException
 		if (left == null || right == null) {
 			throw new NullPointerException();
 		}
-//		if ( left.getNodeType() == 27 ) {
-//			System.out.println( left.structuralPropertiesForType() );
-//			System.out.println( right.structuralPropertiesForType() );
-//		}
+		
 		// if node types are different then the nodes are different.
 		if (left.getNodeType() != right.getNodeType()) {
 			return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
@@ -197,7 +209,7 @@ public class ASTDifferenceLocator {
 		for ( StructuralPropertyDescriptor property : props ) {
 			Object leftVal = left.getStructuralProperty( property );
 			Object rightVal = right.getStructuralProperty( property );
-//			System.out.println( "left: " + leftVal + " property: " + property );
+			
 			if ( leftVal == null && rightVal == null ) {
 				continue;
 			}
@@ -208,13 +220,7 @@ public class ASTDifferenceLocator {
 				// check for simple properties (primitive types, Strings, ...)
 				// with normal equality
 				if ( !leftVal.equals( rightVal ) ) {
-//					System.out.println("Look at me: " + leftVal + " " + rightVal );
-//					System.out.println("Look at me: " + left.getNodeType() + " " + right.getNodeType() );
-//					System.out.println();
 					if ( left.getNodeType() == 42 ) { // SIMPLE_NAME
-//						System.out.println( "nodes are simple names" );
-//						System.out.println( left.getParent() );
-//						System.out.println( right.getParent() );
 						return new SimpleImmutableEntry<ASTNode, ASTNode>( left.getParent(), right.getParent() );
 					}
 					else return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
@@ -225,7 +231,7 @@ public class ASTDifferenceLocator {
 		for ( StructuralPropertyDescriptor property : props ) {
 			Object leftVal = left.getStructuralProperty( property );
 			Object rightVal = right.getStructuralProperty( property );
-//			System.out.println( "left: " + leftVal + " property: " + property );
+			
 			if ( leftVal == null && rightVal == null ) {
 				continue;
 			}
@@ -237,14 +243,12 @@ public class ASTDifferenceLocator {
 				// recursively call this function on child nodes
 				SimpleImmutableEntry<ASTNode, ASTNode> childrenDifference = 
 						getFirstDifferentNode( (ASTNode) leftVal, (ASTNode) rightVal );
-//				System.out.println( childrenDifference );
+				
 				if ( childrenDifference != null ) {
 					propertyDiffs++;
 					if ( firstPropertyDifference == null )
 						firstPropertyDifference = childrenDifference;
 				}
-//					new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
-//				return childrenDifference;
 			}
 			else if ( property.isChildListProperty() ) {
 				Iterator<ASTNode> leftValIt = ((Iterable<ASTNode>) leftVal).iterator();
@@ -255,7 +259,7 @@ public class ASTDifferenceLocator {
 					// recursively call this function on child nodes
 					SimpleImmutableEntry<ASTNode, ASTNode> childrenDifference = 
 							getFirstDifferentNode( leftValIt.next(), rightValIt.next() );
-//					System.out.println( childrenDifference );
+					
 					if ( childrenDifference != null ) {
 						differences++;
 						if ( firstChildrenDifference == null ) {
@@ -263,22 +267,19 @@ public class ASTDifferenceLocator {
 						}
 					}
 				}
-//				System.out.println( differences );
+				
 				// one of the value lists have additional elements
 				if ( leftValIt.hasNext() || rightValIt.hasNext() ) {
 //					System.out.println("Apo has additional");
 					return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
 				}
 				else if ( differences > 1 ) {
-//					System.out.println( "Apo panw apo 1 differences" );
 					return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
 				}
 				else if ( firstPropertyDifference != null ) {
 					return firstPropertyDifference;
 				}
 				else if ( firstChildrenDifference != null ) {
-//					System.out.println("Gurizei first children difference");
-//					System.out.println( firstChildrenDifference );
 					return firstChildrenDifference;
 				}
 			}
@@ -291,6 +292,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isDifferentMethodSameArgs( MethodInvocation newNode, MethodInvocation oldNode ) {
 		if ( equals( newNode.getExpression(), oldNode.getExpression() ) ) {
 			if ( !equals( newNode.getName(), oldNode.getName() ) ) {
@@ -308,6 +315,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isSwapArguments( MethodInvocation newNode, MethodInvocation oldNode ) {
 		if ( equals( newNode.getExpression(), oldNode.getExpression() ) &&
 				equals( newNode.getName(), oldNode.getName() ) ) {
@@ -320,7 +333,6 @@ public class ASTDifferenceLocator {
 			for ( int i = 0; i < newNodeArgs.size(); i++ ) {
 				if ( !equals( newNodeArgs.get(i), oldNodeArgs.get(i) ) )
 						leftDifferentPositions.add(i);
-//				if ( !leftArgs.get(i).equals( rightArgs.get(i) ) ) 
 			}
 			if ( leftDifferentPositions.size() != 2 ) return false;
 			
@@ -367,6 +379,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isCallOverloadedMethodDeletedArgs( MethodInvocation newNode, MethodInvocation oldNode ) {
 		if ( equals( newNode.getExpression(), oldNode.getExpression() ) ) {
 			if ( equals( newNode.getName(), oldNode.getName() ) ) {
@@ -431,6 +449,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isCallOverloadedMethodMoreArgs( ClassInstanceCreation newNode, 
 			ClassInstanceCreation oldNode ) {
 		if ( equals( newNode.getType(), oldNode.getType() ) ) {
@@ -474,6 +498,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeUnaryOperator( Expression newNode, Expression oldNode ) {
 		if ( newNode instanceof PrefixExpression && !(oldNode instanceof PrefixExpression) ) {
 			if ( equals( ((PrefixExpression) newNode).getOperand(), oldNode ) ) return true;
@@ -490,6 +520,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeOperand( InfixExpression newNode, InfixExpression oldNode ) {
 		boolean leftOperandDifferent = false;
 		boolean rightOperandDifferent = false;
@@ -517,6 +553,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeModifier( VariableDeclarationStatement newNode, VariableDeclarationStatement oldNode ) {
 		if ( newNode.getModifiers() == oldNode.getModifiers() ) return false;
 		if ( !newNode.getType().toString().equals( oldNode.getType().toString() ) ) return false;
@@ -532,6 +574,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeModifier( FieldDeclaration newNode, FieldDeclaration oldNode ) {
 		if ( newNode.getModifiers() == oldNode.getModifiers() ) return false;
 		if ( !newNode.getType().toString().equals( oldNode.getType().toString() ) ) return false;
@@ -547,6 +595,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeModifier( MethodDeclaration newNode, MethodDeclaration oldNode ) {
 		if ( newNode.getModifiers() == oldNode.getModifiers() ) return false;
 		if ( !newNode.getName().toString().equals( oldNode.getName().toString() ) ) return false;
@@ -580,11 +634,24 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isSwapBooleanLiteral( BooleanLiteral newNode, BooleanLiteral oldNode ) {
 		if ( newNode.booleanValue() != oldNode.booleanValue() )	return true;
 		else return false;
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isSwapBooleanLiteral( MethodInvocation newNode, MethodInvocation oldNode ) {
 		if ( equals( newNode.getExpression(), oldNode.getExpression() ) ) {
 			if ( equals( newNode.getName(), oldNode.getName() ) ) {
@@ -610,6 +677,13 @@ public class ASTDifferenceLocator {
 		return false;
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isSwapBooleanLiteral( ClassInstanceCreation newNode, ClassInstanceCreation oldNode ) {
 		if ( equals( newNode.getExpression(), oldNode.getExpression() ) ) {
 			if ( equals( newNode.getType(), oldNode.getType() ) ) {
@@ -635,6 +709,13 @@ public class ASTDifferenceLocator {
 		return false;
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeCallerInFunctionCall( MethodInvocation newNode, MethodInvocation oldNode ) {
 		if ( !equals( newNode.getName(), oldNode.getName() ) ) return false;
 		else {
@@ -658,6 +739,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isAddThrowsException( MethodDeclaration newNode, MethodDeclaration oldNode ) {
 		if ( newNode.getModifiers() != oldNode.getModifiers() ) return false;
 		if ( !newNode.getName().toString().equals( oldNode.getName().toString() ) ) return false;
@@ -681,6 +768,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isDeleteThrowsException( MethodDeclaration newNode, MethodDeclaration oldNode ) {
 		if ( newNode.getModifiers() != oldNode.getModifiers() ) return false;
 		if ( !newNode.getName().toString().equals( oldNode.getName().toString() ) ) return false;
@@ -703,6 +796,13 @@ public class ASTDifferenceLocator {
 		return false;
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isModifiedThrownExceptions( MethodDeclaration newNode, MethodDeclaration oldNode ) {
 		if ( newNode.getModifiers() != oldNode.getModifiers() ) return false;
 		if ( !newNode.getName().toString().equals( oldNode.getName().toString() ) ) return false;
@@ -725,6 +825,13 @@ public class ASTDifferenceLocator {
 		return false;
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeIdentifier( ASTNode newNode, ASTNode oldNode ) {
 		boolean foundNameDifference = false;
 		
@@ -757,7 +864,7 @@ public class ASTDifferenceLocator {
 		for ( StructuralPropertyDescriptor property : props ) {
 			Object leftVal = newNode.getStructuralProperty( property );
 			Object rightVal = oldNode.getStructuralProperty( property );
-//			System.out.println( "left: " + leftVal + " property: " + property );
+			
 			if ( leftVal == null && rightVal == null ) {
 				continue;
 			}
@@ -776,12 +883,8 @@ public class ASTDifferenceLocator {
 							foundNameDifference = true;
 					}
 				}
-//				System.out.println( property );
-//				System.out.println( leftVal );
 			}
 			else if ( property.isChildListProperty() ) {
-//				System.out.println( property );
-//				System.out.println( leftVal + " " + rightVal );
 				Iterator<ASTNode> leftValIt = ((Iterable<ASTNode>) leftVal).iterator();
 				Iterator<ASTNode> rightValIt = ((Iterable<ASTNode>) rightVal).iterator();
 				SimpleImmutableEntry<ASTNode, ASTNode> firstChildrenDifference = null;
@@ -799,7 +902,6 @@ public class ASTDifferenceLocator {
 								foundNameDifference = true;
 						}
 					}
-//					System.out.println( leftValIt.next().getNodeType() + " " + rightValIt.next().getNodeType() );
 				}
 			}
 		}
@@ -809,11 +911,23 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeNumeral( NumberLiteral newNode, NumberLiteral oldNode ) {
 		return !newNode.getToken().equals( oldNode.getToken() );
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isMoreSpecificIf( InfixExpression newNode, InfixExpression oldNode ) {
 		if ( oldNode.getParent().getNodeType() == ASTNode.IF_STATEMENT &&
 				newNode.getParent().getNodeType() == ASTNode.IF_STATEMENT ||
@@ -828,20 +942,17 @@ public class ASTDifferenceLocator {
 			else if ( isConditionalAndOperand( newNode, oldNode ) ) {
 				return true;
 			}
-//			else if ( newNode.getOperator() == Operator.CONDITIONAL_AND  ) {
-//				System.out.println( "Eidwmen to fws to alhthino!" );
-//				System.out.println( oldNode );
-//				System.out.println( newNode );
-//				System.out.println( newNode.getLeftOperand() );
-//				System.out.println( newNode.getRightOperand() );
-//				System.out.println( newNode.extendedOperands() );
-//				System.out.println();
-//			}
 		}
 		return false;
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isLessSpecificIf( InfixExpression newNode, InfixExpression oldNode ) {
 		if ( oldNode.getParent().getNodeType() == ASTNode.IF_STATEMENT &&
 				newNode.getParent().getNodeType() == ASTNode.IF_STATEMENT ||
@@ -856,20 +967,17 @@ public class ASTDifferenceLocator {
 			else if ( isConditionalOrOperand( newNode, oldNode ) ) {
 				return true;
 			}
-//			else if ( newNode.getOperator() == Operator.CONDITIONAL_OR  ) {
-//				System.out.println( "Eidwmen to fws to alhthino!" );
-//				System.out.println( oldNode );
-//				System.out.println( newNode );
-//				System.out.println( newNode.getLeftOperand() );
-//				System.out.println( newNode.getRightOperand() );
-//				System.out.println( newNode.extendedOperands() );
-//				System.out.println();
-//			}
 		}
 		return false;
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isMoreSpecificIf( InfixExpression newNode, Expression oldNode ) {
 		if ( oldNode.getParent().getNodeType() == ASTNode.IF_STATEMENT &&
 				newNode.getParent().getNodeType() == ASTNode.IF_STATEMENT ||
@@ -884,20 +992,17 @@ public class ASTDifferenceLocator {
 			else if ( newNode.getOperator() == Operator.CONDITIONAL_AND ) {
 				return isConditionalAndOperand( newNode, oldNode );
 			}
-//			else if ( newNode.getOperator() == Operator.CONDITIONAL_AND  ) {
-//				System.out.println( "Eidwmen to fws to alhthino!" );
-//				System.out.println( oldNode );
-//				System.out.println( newNode );
-//				System.out.println( newNode.getLeftOperand() );
-//				System.out.println( newNode.getRightOperand() );
-//				System.out.println( newNode.extendedOperands() );
-//				System.out.println();
-//			}
 		}
 		return false;
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isLessSpecificIf( InfixExpression newNode, Expression oldNode ) {
 		if ( oldNode.getParent().getNodeType() == ASTNode.IF_STATEMENT &&
 				newNode.getParent().getNodeType() == ASTNode.IF_STATEMENT ||
@@ -941,9 +1046,7 @@ public class ASTDifferenceLocator {
 		
 		Expression oldLeftOperand = oldNode.getLeftOperand();
 		boolean foundLeft = false;
-//		System.out.println( oldLeftOperand );
-//		System.out.println( newNode.getLeftOperand() );
-//		System.out.println( newNode.getRightOperand() );
+		
 		if ( equals(oldLeftOperand, newNode.getLeftOperand()) ) foundLeft = true;
 		if ( equals(oldLeftOperand, newNode.getRightOperand()) ) foundLeft = true;
 		for ( Expression extendedOperand : (List<Expression>) newNode.extendedOperands() ) {
@@ -978,6 +1081,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isConditionalAndOperand(  InfixExpression newNode, Expression oldNode  ) {
 		if ( newNode.getOperator() != Operator.CONDITIONAL_AND ) return false;
 		if ( equals( newNode.getLeftOperand(), oldNode ) ) return true;
@@ -1023,9 +1132,7 @@ public class ASTDifferenceLocator {
 		
 		Expression oldLeftOperand = oldNode.getLeftOperand();
 		boolean foundLeft = false;
-//		System.out.println( oldLeftOperand );
-//		System.out.println( newNode.getLeftOperand() );
-//		System.out.println( newNode.getRightOperand() );
+		
 		if ( equals(oldLeftOperand, newNode.getLeftOperand()) ) foundLeft = true;
 		if ( equals(oldLeftOperand, newNode.getRightOperand()) ) foundLeft = true;
 		for ( Expression extendedOperand : (List<Expression>) newNode.extendedOperands() ) {
@@ -1060,6 +1167,12 @@ public class ASTDifferenceLocator {
 	}
 	
 	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isConditionalOrOperand( InfixExpression newNode, Expression oldNode  ) {
 		if ( newNode.getOperator() != Operator.CONDITIONAL_OR ) return false;
 		if ( equals( newNode.getLeftOperand(), oldNode ) ) return true;
@@ -1081,109 +1194,43 @@ public class ASTDifferenceLocator {
 	}
 	
 	
-//	public static boolean isChangeIdentifier( ASTNode newNode, ASTNode oldNode ) {
-//		boolean foundDifference = false;
-//		
-//		if (newNode.getNodeType() != oldNode.getNodeType()) {
-//			return false;
-//		}
-//		List<StructuralPropertyDescriptor> props = newNode.structuralPropertiesForType();
-//		List<StructuralPropertyDescriptor> rightProps = oldNode.structuralPropertiesForType();
-//		if ( props.size() != rightProps.size() ) 
-//			return false;
-//		int propertyDiffs = 0;
-//		
-//		for ( StructuralPropertyDescriptor property : props ) {
-//			Object leftVal = newNode.getStructuralProperty( property );
-//			Object rightVal = oldNode.getStructuralProperty( property );
-////			System.out.println( "left: " + leftVal + " property: " + property );
-//			if ( leftVal == null && rightVal == null ) {
-//				continue;
-//			}
-//			if ( leftVal == null || rightVal == null ) {
-//				return false;
-//			}
-//			
-//			if ( property.isChildProperty() ) {
-//				// recursively call this function on child nodes
-//				SimpleImmutableEntry<ASTNode, ASTNode> childrenDifference = 
-//						getFirstDifferentNode( (ASTNode) leftVal, (ASTNode) rightVal );
-////				System.out.println( childrenDifference );
-//				if ( childrenDifference != null ) {
-//					propertyDiffs++;
-//					if ( firstPropertyDifference == null )
-//						firstPropertyDifference = childrenDifference;
-//				}
-////					new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
-////				return childrenDifference;
-//			}
-//			else if ( property.isChildListProperty() ) {
-//				Iterator<ASTNode> leftValIt = ((Iterable<ASTNode>) leftVal).iterator();
-//				Iterator<ASTNode> rightValIt = ((Iterable<ASTNode>) rightVal).iterator();
-//				SimpleImmutableEntry<ASTNode, ASTNode> firstChildrenDifference = null;
-//				int differences = 0;
-//				while ( leftValIt.hasNext() && rightValIt.hasNext() ) {
-//					// recursively call this function on child nodes
-//					SimpleImmutableEntry<ASTNode, ASTNode> childrenDifference = 
-//							getFirstDifferentNode( leftValIt.next(), rightValIt.next() );
-////					System.out.println( childrenDifference );
-//					if ( childrenDifference != null ) {
-//						differences++;
-//						if ( firstChildrenDifference == null ) {
-//							firstChildrenDifference = childrenDifference;
-//						}
-//					}
-//				}
-////				System.out.println( differences );
-//				// one of the value lists have additional elements
-//				if ( leftValIt.hasNext() || rightValIt.hasNext() ) {
-////					System.out.println("Apo has additional");
-//					return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
-//				}
-//				else if ( differences > 1 ) {
-////					System.out.println( "Apo panw apo 1 differences" );
-//					return new SimpleImmutableEntry<ASTNode, ASTNode>( left, right );
-//				}
-//				else if ( firstPropertyDifference != null ) {
-//					return firstPropertyDifference;
-//				}
-//				else if ( firstChildrenDifference != null ) {
-////					System.out.println("Gurizei first children difference");
-////					System.out.println( firstChildrenDifference );
-//					return firstChildrenDifference;
-//				}
-//			}
-//		}
-//		if ( propertyDiffs != 1 ) {
-//			return false;
-//		}
-//		// if simpleName field diff
-//		return true;
-//	}
-	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeField( FieldAccess newNode, FieldAccess oldNode ) {
 		return newNode.toString().equals( oldNode.toString() );
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isChangeField( Assignment newNode, Assignment oldNode ) {
 		if ( !equals( newNode.getLeftHandSide(), oldNode.getLeftHandSide() ) ) {
 			if ( !equals(newNode.getRightHandSide(), oldNode.getRightHandSide() ) ) {
 				return false;
 			}
-//			System.out.println( "Left diff: " + oldNode.getLeftHandSide() + " " + newNode.getLeftHandSide() );
 			return true;
 		}
 		else if ( !equals( newNode.getRightHandSide(), oldNode.getRightHandSide() ) ) {
-//			System.out.println( "Right diff: " + newNode.getRightHandSide().getClass() );
 			return true;
-		}
-		else {
-//			System.out.println( newNode.getLeftHandSide().getNodeType() );
-//			System.out.println( oldNode.getLeftHandSide().getNodeType() );
 		}
 		return false;
 	}
 	
+	
+	/**
+	 * 
+	 * @param newNode
+	 * @param oldNode
+	 * @return
+	 */
 	public static boolean isNonMatchingParameter( MethodDeclaration newNode, MethodDeclaration oldNode ) {
 		if ( newNode.parameters().size() != oldNode.parameters().size() ) return false;
 		List<ASTNode> newParameters = newNode.parameters();

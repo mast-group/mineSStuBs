@@ -3,7 +3,6 @@
  */
 package uk.ac.ed.inf.mpatsis.sstubs.mining;
 
-import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,7 +13,6 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,32 +21,23 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.AbstractMap.SimpleImmutableEntry;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.diff.DiffAlgorithm;
-import org.eclipse.jgit.diff.DiffAlgorithm.SupportedAlgorithm;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;
-import org.eclipse.jgit.diff.DiffEntry.Side;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.RawTextComparator;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 //import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.patch.FileHeader;
-import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -57,37 +46,26 @@ import edu.stanford.nlp.io.EncodingPrintWriter.out;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
 import edu.stanford.nlp.process.Stemmer;
-//import uk.ac.ed.inf.mpatsis.GitHubSearch.AST.ASTBugTemplateComparator;
+
 import uk.ac.ed.inf.mpatsis.sstubs.AST.ASTDifferenceLocator;
 import uk.ac.ed.inf.mpatsis.sstubs.AST.RefactoredFunctionsVisitor;
 import uk.ac.ed.inf.mpatsis.sstubs.AST.RefactoredVariablesVisitor;
-import uk.ac.ed.inf.mpatsis.sstubs.core.BugInstance;
 import uk.ac.ed.inf.mpatsis.sstubs.core.BugType;
 import uk.ac.ed.inf.mpatsis.sstubs.core.MinedBug;
 import uk.ac.ed.inf.mpatsis.sstubs.core.MinedSStuB;
 
-import org.eclipse.egit.github.core.CommitFile;
-//import org.eclipse.egit.github.core.Commit;
-import org.eclipse.egit.github.core.service.RepositoryService;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.compiler.InvalidInputException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Assignment;
-import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
-import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
-import org.eclipse.jdt.core.dom.InfixExpression.Operator;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NumberLiteral;
@@ -1096,7 +1074,7 @@ public class SStuBsMiner {
 									}
 								}
 							}
-//							System.out.println( out.toString() );
+							
 						}
 						else if ( !noMultistatenentChanges( editTypes ) ) {
 							nonOneLiners = true;
@@ -1202,13 +1180,6 @@ public class SStuBsMiner {
 					
 					switch ( newNode.getNodeType() ) {
 					case ASTNode.TYPE_DECLARATION:
-//						System.out.println( "Refactored class: " + ((TypeDeclaration) oldNode).getName() );
-//						System.out.println( out.toString() );
-//						System.out.println( "oldNode" );
-//						System.out.println( oldNode );
-//						System.out.println( "newNode" );
-//						System.out.println( newNode );
-						
 						if ( !((TypeDeclaration) newNode).getName().toString().equals( 
 								((TypeDeclaration) oldNode).getName().toString() ) ) {
 							refactoredChanges++;
@@ -1269,18 +1240,6 @@ public class SStuBsMiner {
 							break;
 						}
 						else {
-//							System.out.println( "old f declaration frag " + oldNode );
-//							System.out.println( "new f declaration frag " + newNode );
-//							System.out.println( "old f declaration frag " + oldNode.getParent() );
-//							System.out.println( "new f declaration frag " + newNode.getParent() );
-//							System.out.println( "old f declaration frag " + oldNode.getParent().getNodeType());
-//							System.out.println( "new f declaration frag " + newNode.getParent().getNodeType() );
-							
-//							final int START = oldNode.getParent().getParent().getStartPosition();
-//							final int END = START + oldNode.getParent().getParent().getLength() + 1;
-//							refactoredVariables.put( ((VariableDeclarationFragment) newNode).getName().toString(), 
-//									new RefactoredVariable( newNode.toString(), START, END ) );
-//							refactoredChanges++;
 							break;
 						}
 					case ASTNode.FIELD_DECLARATION:
@@ -1526,7 +1485,6 @@ public class SStuBsMiner {
 						// Probably unnecessary
 						if ( refactoredClasses.contains( 
 								((ClassInstanceCreation) oldNode).getType().toString() ) ) {
-//							System.out.println( "Constructor called" );
 							refactoredChanges++;
 						}
 						break;
@@ -1659,7 +1617,6 @@ public class SStuBsMiner {
 		List<EditType> editTypes = new ArrayList<EditType>();
 		
 		try {
-//			System.err.println( df.toFileHeader(diff).getOldPath() );
 			final String patch = out.toString( "UTF-8" );
 			final String cleanedPatch = patch.substring( patch.lastIndexOf("@@") + 3 );
 			
@@ -1712,7 +1669,6 @@ public class SStuBsMiner {
 					
 					int beforeL;
 					for ( beforeL = edit.getBeginA(); beforeL < edit.getEndA(); beforeL++ ) {
-//						System.out.println( oldLines[l] );
 						if ( !oldCommentLines.get( beforeL )  ) {
 							oldPatchBuilder.append( oldLines[beforeL] );
 							oldPatchBuilder.append( '\n' );
@@ -1738,7 +1694,7 @@ public class SStuBsMiner {
 							else if ( token.equals( "for" ) || token.equals( "if" ) ) {
 								forOrIf = true;
 							}
-//							System.out.println( "token: " + token );
+
 							if ( forOrIf ) {
 								if ( token.equals( "(" ) ) lPars++;
 								else if ( token.equals( ")" ) ) {
@@ -1755,7 +1711,6 @@ public class SStuBsMiner {
 							beforeStatements.add( currentStatement );
 						}
 					} catch ( InvalidInputException iie ) {
-						// iie.printStackTrace();
 						editTypes.add( EditType.OTHER );
 						continue EDIT_LOOP;
 					}
@@ -1804,7 +1759,6 @@ public class SStuBsMiner {
 							afterStatements.add( currentStatement );
 						}
 					} catch ( InvalidInputException iie ) {
-//						iie.printStackTrace();
 						editTypes.add( EditType.OTHER );
 						continue EDIT_LOOP;
 					}
@@ -1875,12 +1829,9 @@ public class SStuBsMiner {
 			CompilationUnit beforeCU = (CompilationUnit) parser.createAST( null );			 
 			ASTs.add( beforeCU );
 			
-//			final String patch = out.toString( "UTF-8" );
-//			final String cleanedPatch = patch.substring( patch.lastIndexOf("@@") + 3 );
-//			
 			final String[] oldLines = oldFileContent.split( "\n" );
 			final String[] newLines = newFileContent.split( "\n" );
-//			System.out.println( out.toString() );
+			
 			int editIndex = 0;
 			for ( Edit edit : df.toFileHeader(diff).toEditList() ) {
 				if ( editTypes.get( editIndex++ ) != EditType.SINGLE_STATEMENT_MOD ) continue;
@@ -1892,7 +1843,7 @@ public class SStuBsMiner {
 					else editBuilder.append( oldLines[l] );
 					editBuilder.append( '\n' );
 				}
-//				System.err.println(editBuilder.toString());
+				
 				for ( int l = edit.getBeginB(); l < edit.getEndB(); l++ ) {
 					if ( newLines[l].endsWith( "\r" ) ) 
 						editBuilder.append( newLines[l].substring(0, newLines[l].length() - 1) );
@@ -1905,8 +1856,6 @@ public class SStuBsMiner {
 					else editBuilder.append( oldLines[l] );
 					editBuilder.append( '\n' );
 				}
-//				System.err.println( "\nComplete file:" );
-//				System.err.println(editBuilder.toString());
 				
 				options.put( JavaCore.COMPILER_SOURCE, JavaCore.VERSION_1_8 );
 				options.put( JavaCore.COMPILER_COMPLIANCE, JavaCore.VERSION_1_8 );
@@ -1915,12 +1864,10 @@ public class SStuBsMiner {
 				parser.setResolveBindings( true );
 				parser.setKind( ASTParser.K_COMPILATION_UNIT );
 				parser.setSource( editBuilder.toString().toCharArray() );
-//				System.out.println( df.toFileHeader(diff).toEditList().size() + "Kai to mhkos tou builder einai: " + editBuilder.length() );
+
 				final CompilationUnit editCU = (CompilationUnit) parser.createAST( null );
 				ASTs.add( editCU );
 				
-//				System.out.println( ASTDifferenceLocator.getFirstDifferentNode(editCU, beforeCU) );
-//				System.out.println( out.toString() );
 			}
 			return ASTs;
 		}
@@ -2111,11 +2058,9 @@ public class SStuBsMiner {
 		for ( File repoDir : reposList ) {
 			if ( !repoDir.isDirectory() ) continue;
 			System.out.println( "Mining repository: " + repoDir.getAbsolutePath() );
-//			if ( !repoDir.getName().equals("wildfly.wildfly") ) continue;
 			miner.mineSStuBs( repoDir.getAbsolutePath() );			
 			System.out.println( "Projects Mined: " + ++p );
 			System.gc();
-//			break;
 		}
 		
 		miner.saveToJSON();
