@@ -50,6 +50,9 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import edu.stanford.nlp.io.EncodingPrintWriter.out;
 import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.process.PTBTokenizer;
@@ -80,6 +83,7 @@ import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
@@ -140,7 +144,9 @@ public class SStuBsMiner {
 	
 	private BufferedWriter sstubsWriter;
 	private BufferedWriter bugsWriter;
+	private BufferedWriter patchesSStuBWriter;
 	private BufferedWriter patchesWriter;
+	private final Gson objGson = new GsonBuilder().setPrettyPrinting().create();
 	
 	private int commits;
 	private int bugFixCommits;
@@ -152,7 +158,6 @@ public class SStuBsMiner {
 	private int refactoredLines;
 	private int oneLinersFitTemplate;
 	private int sstubs = 0;
-	private int countAssignments = 0;
 	
 	private ArrayList<String> nonOnlyOneLiner;
 	private ArrayList<MinedSStuB> minedSstubs;
@@ -200,15 +205,15 @@ public class SStuBsMiner {
 		
 		
 		try {
-			patchesWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/patches.txt" ) ) ) );
+			patchesSStuBWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/patchesSStuBsT.json" ) ) ) );
 		} catch ( FileNotFoundException fnfe ) {
 			fnfe.printStackTrace();
 			System.exit(2);
 		}
 		try {
 			sstubsWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/sstubs.tsv" ) ) ) );
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/sstubsT.json" ) ) ) );
 		}
 		catch ( FileNotFoundException  fnfe ) {
 			fnfe.printStackTrace();
@@ -216,11 +221,18 @@ public class SStuBsMiner {
 		}
 		try {
 			bugsWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/bugs.tsv" ) ) ) );
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/bugsT.json" ) ) ) );
 		}
 		catch ( FileNotFoundException  fnfe ) {
 			fnfe.printStackTrace();
 			System.exit(4);
+		}
+		try {
+			patchesWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/patcheTs.json" ) ) ) );
+		} catch ( FileNotFoundException fnfe ) {
+			fnfe.printStackTrace();
+			System.exit(5);
 		}
 	}
 	
@@ -290,7 +302,7 @@ public class SStuBsMiner {
 				int javaFiles = 0;
 				ArrayList<MinedSStuB> currentMinedStubs = new ArrayList<MinedSStuB>();
 				ArrayList<MinedBug> currentMinedBugs = new ArrayList<MinedBug>();
-				ArrayList<String> currentPatches = new ArrayList<String>();
+				ArrayList<String> currentSStuBPatches = new ArrayList<String>();
 				for ( DiffEntry diff : diffs ) {
 					if ( diff.getChangeType().compareTo( ChangeType.ADD ) == 0 && diff.getNewPath().endsWith( ".java" ) ) {
 						nonOneLiners = true;
@@ -319,7 +331,6 @@ public class SStuBsMiner {
 						boolean noMultistatenentChanges = noMultistatenentChanges( editTypes );
 						
 						ArrayList<CompilationUnit> ASTs = (ArrayList<CompilationUnit>) getASTs( diff, out, editTypes );
-						
 						if ( noMultistatenentChanges( editTypes ) && !onlyCommentEdits( editTypes ) &&
 								hasSingleStatementEdit( editTypes ) ) {
 							nonCommentChanges = true;
@@ -418,7 +429,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 											continue;
 										}
@@ -448,7 +459,7 @@ public class SStuBsMiner {
 											countedJavaFile = true;
 										}
 										oneLinersFitTemplate++;
-										currentPatches.add( out.toString() );
+										currentSStuBPatches.add( out.toString() );
 										fitsTemplate = true;
 										continue;
 									}
@@ -477,7 +488,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Is constructor call pair that fits same function deleted arguments?
@@ -499,7 +510,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Is constructor call pair that fits same function more arguments?
@@ -521,7 +532,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Spots instances of swap boolean literal inside a constructor call.
@@ -566,7 +577,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Is method invocation pair that fits wrong function name?
@@ -588,7 +599,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Is method invocation pair that fits same function change caller?
@@ -610,7 +621,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Is method invocation pair that fits same function less arguments?
@@ -632,7 +643,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Is method invocation pair that fits same function more arguments?
@@ -654,7 +665,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Spots instances of swap boolean literal inside a method invocation.
@@ -699,7 +710,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 									}
@@ -728,7 +739,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Spots instances of change operand for InfixExpression pairs.
@@ -750,7 +761,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Checks if it is an instance of more specific if/while
@@ -772,7 +783,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Checks if it is an instance of less specific if/while
@@ -794,7 +805,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										else {
@@ -827,7 +838,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										else {
@@ -860,7 +871,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										else {
@@ -892,7 +903,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Checks if the method declaration pair fits the missing throws exception pattern.
@@ -914,7 +925,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										// Checks if the method declaration pair fits the delete throws exception pattern.
@@ -936,7 +947,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										else {
@@ -968,7 +979,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 										else {
@@ -997,7 +1008,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 										}
 									}
@@ -1026,7 +1037,7 @@ public class SStuBsMiner {
 											countedJavaFile = true;
 										}
 										oneLinersFitTemplate++;
-										currentPatches.add( out.toString() );
+										currentSStuBPatches.add( out.toString() );
 										fitsTemplate = true;
 										continue;
 									}
@@ -1056,7 +1067,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 											continue;
 										}
@@ -1078,7 +1089,7 @@ public class SStuBsMiner {
 												countedJavaFile = true;
 											}
 											oneLinersFitTemplate++;
-											currentPatches.add( out.toString() );
+											currentSStuBPatches.add( out.toString() );
 											fitsTemplate = true;
 											continue;
 										}
@@ -1103,22 +1114,23 @@ public class SStuBsMiner {
 					refactoredLines += refactoredChanges;
 					
 					minedBugs.addAll( currentMinedBugs );
-					for ( MinedBug bug : currentMinedBugs ) {
-						bugsWriter.write( bug.toString() );
-					}
+//					for ( MinedBug bug : currentMinedBugs ) {
+//						bugsWriter.write( bug.toString() );
+//						patchesWriter.write( bug.getPatch() );
+//					}
 				}
 				// If only one liner bugs and there are stubs 
 				if ( !nonOneLiners && currentMinedStubs.size() > 0 ) {
 					sstubs += currentMinedStubs.size();
 					
-					for ( String patch : currentPatches ) {
-						patchesWriter.write( patch );
+					for ( String patch : currentSStuBPatches ) {
+						patchesSStuBWriter.write( patch );
 					}
 					
 					minedSstubs.addAll( currentMinedStubs );
-					for ( MinedSStuB sstub : currentMinedStubs ) {
-						sstubsWriter.write( sstub.toString() );
-					}
+//					for ( MinedSStuB sstub : currentMinedStubs ) {
+//						sstubsWriter.write( sstub.toString() );
+//					}
 					
 				}
 			}
@@ -1146,7 +1158,7 @@ public class SStuBsMiner {
 		if ( out.toString().length() > 5000000 ) {
 			return 0;
 		}
-		
+		final String FILENAME = diff.getNewPath();
 		// First pass. Spots refactored functions and variables.
 		
 		// Get old and new file contents
@@ -1186,6 +1198,8 @@ public class SStuBsMiner {
 					continue;
 				}
 				else {
+					int refactoringLine = ASTs.get(t).getLineNumber( newNode.getStartPosition() );
+					
 					switch ( newNode.getNodeType() ) {
 					case ASTNode.TYPE_DECLARATION:
 //						System.out.println( "Refactored class: " + ((TypeDeclaration) oldNode).getName() );
@@ -1199,16 +1213,13 @@ public class SStuBsMiner {
 								((TypeDeclaration) oldNode).getName().toString() ) ) {
 							refactoredChanges++;
 							refactoredClasses.add( ((TypeDeclaration) oldNode).getName().toString() );
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
 						}
 						else if ( ASTDifferenceLocator.isChangeModifier( 
 								(TypeDeclaration) newNode, (TypeDeclaration) oldNode ) ) {
 //							System.out.println( "Changed modifiers. Not refactoring" );
 						}
-						else {
-//							System.out.println( "Koita me Michael" );
-//							System.out.println( out.toString() );
-//							refactoredChanges++;
-						}
+						
 						break;
 					case ASTNode.VARIABLE_DECLARATION_STATEMENT:
 //						System.out.println( "old var declaration " + oldNode );
@@ -1227,6 +1238,7 @@ public class SStuBsMiner {
 									refactoredVariables.put( newFragments.get(i).getName().toString(), new 
 											RefactoredVariable( newFragments.get(i).getName().toString(), START, END ) );
 									refactoredChanges++;
+									refactoringLines.add( FILENAME + ":" + refactoringLine );
 								}
 							}
 						}
@@ -1244,12 +1256,16 @@ public class SStuBsMiner {
 											((VariableDeclarationFragment) newNode).getParent(),
 									(VariableDeclarationStatement) ((VariableDeclarationFragment) oldNode).getParent() ) )
 								break;
-							final int START = oldNode.getParent().getParent().getStartPosition();
-							final int END = START + oldNode.getParent().getParent().getLength() + 1;
-							final String varName = ((VariableDeclarationFragment) newNode).getName().toString();
-							refactoredVariables.put( varName, 
-									new RefactoredVariable( varName, START, END ) );
-							refactoredChanges++;
+							
+							if ( !((VariableDeclarationFragment) newNode).getName().equals( 
+									((VariableDeclarationFragment) oldNode).getName() ) ) {
+								final int START = oldNode.getParent().getParent().getStartPosition();
+								final int END = START + oldNode.getParent().getParent().getLength() + 1;
+								final String varName = ((VariableDeclarationFragment) newNode).getName().toString();
+								refactoredVariables.put( varName, new RefactoredVariable( varName, START, END ) );
+								refactoredChanges++;
+								refactoringLines.add( FILENAME + ":" + refactoringLine );
+							}
 							break;
 						}
 						else {
@@ -1271,140 +1287,148 @@ public class SStuBsMiner {
 						final int START_F = oldNode.getParent().getParent().getStartPosition();
 						final int END_F = START_F + oldNode.getParent().getParent().getLength() + 1;
 //						System.out.println( ((FieldDeclaration) newNode).fragments() );
-						for ( Object fragment : ((FieldDeclaration) newNode).fragments() ) {
-							final String fieldName = ((VariableDeclarationFragment) fragment).getName().toString();
-							refactoredVariables.put( fieldName, 
-									new RefactoredVariable( fieldName, START_F, END_F ) );
+						// FIX ME RAFA
+						if ( ((FieldDeclaration) newNode).fragments().size() == 
+								((FieldDeclaration) oldNode).fragments().size() ) {
+							boolean refactored = false;
+							for ( int i = 0; i < ((FieldDeclaration) newNode).fragments().size(); i++ ) {
+								final Object newFragment = ((FieldDeclaration) newNode).fragments().get(i);
+								final String newName = 
+										((VariableDeclarationFragment) newFragment).getName().toString();
+								
+								boolean found = false;
+								for ( int j = 0; j < ((FieldDeclaration) oldNode).fragments().size(); j++ ) {
+									final Object oldFragment = ((FieldDeclaration) oldNode).fragments().get(j);
+									final String oldName = 
+											((VariableDeclarationFragment) oldFragment).getName().toString();
+									
+									if ( newName.equals( oldName ) ) {
+										found = true;
+										break;
+									}
+								}
+								if (!found) {
+									refactoredVariables.put( newName, 
+											new RefactoredVariable( newName, START_F, END_F ) );
+									refactoringLines.add( FILENAME + ":" + refactoringLine );
+									refactored = true;
+								}
+							}
+							if (refactored) refactoredChanges++;
 						}
-						refactoredChanges++;
+						else {
+							refactoredChanges++;
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
+							for ( int j = 0; j < ((FieldDeclaration) newNode).fragments().size(); j++ ) {
+								Object newFragment = ((FieldDeclaration) newNode).fragments().get(j);
+								final String newName = 
+										((VariableDeclarationFragment) newFragment).getName().toString();
+								
+								boolean found = false;
+								for ( int i = 0; i < ((FieldDeclaration) oldNode).fragments().size(); i++ ) {
+									final Object oldFragment = ((FieldDeclaration) oldNode).fragments().get(i);
+									final String oldName = 
+											((VariableDeclarationFragment) oldFragment).getName().toString();
+									
+									if ( newName.equals( oldName ) ) {
+										found = true;
+										break;
+									}	
+								}
+								if (!found) {
+									refactoredVariables.put( newName, 
+											new RefactoredVariable( newName, START_F, END_F ) );
+								}
+							}
+						}
 						break;
 					case ASTNode.SINGLE_VARIABLE_DECLARATION:
-						final int START = oldNode.getParent().getStartPosition();
-						final int END = START + oldNode.getParent().getLength() + 1;
+						int START = oldNode.getParent().getStartPosition();
+						int END = START + oldNode.getParent().getLength() + 1;
 						
 						final int START_LINE = ((CompilationUnit) oldNode.getRoot()).getLineNumber( START );
 						final int END_LINE = ((CompilationUnit) oldNode.getRoot()).getLineNumber( END );
 						
-						final String varName = ((SingleVariableDeclaration) newNode).getName().toString();
-						refactoredVariables.put( varName, 
-								new RefactoredVariable( varName, START, END ) );
-						refactoredChanges++;
-						
-//						System.out.println( out.toString() );
+						if ( !((SingleVariableDeclaration) oldNode).getName().equals( 
+								((SingleVariableDeclaration) newNode).getName() ) ) {
+							final String varName = ((SingleVariableDeclaration) newNode).getName().toString();
+							refactoredVariables.put( varName, 
+									new RefactoredVariable( varName, START, END ) );
+							refactoredChanges++;
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
+						}
 						break;
 					case ASTNode.METHOD_DECLARATION:
-//						System.out.println( oldNode );
-//						System.out.println( newNode );
+						START = oldNode.getStartPosition();
+						END = START + oldNode.getLength() + 1;
 						
-//						System.out.println( "Method Declaration redifined" );
-//						System.out.println( ((MethodDeclaration) oldNode).getReturnType2() );
-//						System.out.println( ((MethodDeclaration) newNode).getReturnType2() );
 						RefactoredFunction refactoredFunc = new RefactoredFunction();
-						String signature = ((MethodDeclaration) oldNode).getName() + ":" + 
-								((MethodDeclaration) oldNode).parameters().size();
+						String signature = ((MethodDeclaration) newNode).getName() + ":" + 
+								((MethodDeclaration) newNode).parameters().size();
 						
 						if ( !((MethodDeclaration) oldNode).getName().toString().equals( 
 								((MethodDeclaration) newNode).getName().toString() ) ) {
 							refactoredChanges++;
-							// TODO fixed object initialization
 							refactoredFunctions.put( signature, refactoredFunc );
-//							System.out.println( "Method renaming" );
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
 						}
 						else if ( ((MethodDeclaration) oldNode).getReturnType2() != 
 								((MethodDeclaration) newNode).getReturnType2() && 
 								(((MethodDeclaration) oldNode).getReturnType2() == null || 
 										((MethodDeclaration) newNode).getReturnType2() == null ) ) {
 							refactoredChanges++;
-							// TODO fixed object initialization
 							refactoredFunctions.put( signature, refactoredFunc );
-//							System.out.println( "Changed type" );
-//							System.out.println( ((MethodDeclaration) oldNode).getName() + " " + 
-//									((MethodDeclaration) oldNode).getReturnType2() );
-//							System.out.println( ((MethodDeclaration) newNode).getName() + " " + 
-//									((MethodDeclaration) newNode).getReturnType2() );
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
 						}
 						else if ( (((MethodDeclaration) oldNode).getReturnType2() != null && 
 								((MethodDeclaration) oldNode).getReturnType2() != null) && 
-								!((MethodDeclaration) oldNode).getReturnType2().equals( 
-										((MethodDeclaration) newNode).getReturnType2() ) ) {
+								!((MethodDeclaration) oldNode).getReturnType2().toString().equals( 
+										((MethodDeclaration) newNode).getReturnType2().toString() ) ) {
 							refactoredChanges++;
-							// TODO fixed object initialization
 							refactoredFunctions.put( signature, refactoredFunc );
-//							System.out.println( "Changed type" );
-//							System.out.println( ((MethodDeclaration) oldNode).getName() + " " + 
-//									((MethodDeclaration) oldNode).getReturnType2() );
-//							System.out.println( ((MethodDeclaration) newNode).getName() + " " + 
-//									((MethodDeclaration) newNode).getReturnType2() );
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
 						}
 						else if ( ((MethodDeclaration) oldNode).parameters().size() != 
 								((MethodDeclaration) newNode).parameters().size() ) {
 							refactoredChanges++;
-							// TODO fixed object initialization
 							refactoredFunctions.put( signature, refactoredFunc );
-//							System.out.println( "Changed parameter number" );
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
 						}
 						else if ( ASTDifferenceLocator.isChangeModifier( 
 								(MethodDeclaration) newNode, (MethodDeclaration) oldNode ) ) {
-//							System.out.println("Koita ti vrhka. Modifiers");
 						}
-//						else if ( ASTDifferenceLocator.isAddThrowsException( 
-//								(MethodDeclaration) newNode, (MethodDeclaration) oldNode ) ) {
-//							// Ignore
-//						}
-//						else if ( ASTDifferenceLocator.isDeleteThrowsException( 
-//								(MethodDeclaration) newNode, (MethodDeclaration) oldNode ) ) {
-//							// Ignore
-//						}
 						else if ( ASTDifferenceLocator.isNonMatchingParameter( ((MethodDeclaration) newNode), 
 								((MethodDeclaration) oldNode) ) ) {
 							refactoredChanges++;
 							refactoredFunctions.put( signature, refactoredFunc );
-//							System.out.println( "Changed parameter" );
+							refactoringLines.add( FILENAME + ":" + refactoringLine );
 						}
-//						else {
-//							System.out.println( "Des ti paizei edw" );
-//							System.out.println( oldNode );
-//							System.out.println( newNode );
-//							System.out.println( "Method Declaration redifined" );
-//							System.out.println( out.toString() );
-//						}
-//						if ( .getName() != ((MethodDeclaration) oldNode).getName() ) {
-//							refactoredChanges++;
-//							// ToDo fixed object initialization
-//							RefactoredFunction refactoredFunc = new RefactoredFunction();
-//							String signature = ((MethodDeclaration) oldNode).getName() + ":" + 
-//									((MethodDeclaration) oldNode).parameters().size();
-//							refactoredFunctions.put( signature, refactoredFunc );
-//						}
+						else if ( ((MethodDeclaration) newNode).parameters().size() == 
+								((MethodDeclaration) oldNode).parameters().size() ) {
+							List<ASTNode> newParameters = ((MethodDeclaration) newNode).parameters();
+							List<ASTNode> oldParameters = ((MethodDeclaration) oldNode).parameters();
+							for ( int i = 0; i < newParameters.size(); i++ ) {
+								if ( !ASTDifferenceLocator.equals( newParameters.get(i), oldParameters.get(i) ) && 
+										!((SingleVariableDeclaration) newParameters.get(i)).getName().toString().equals( 
+										((SingleVariableDeclaration) oldParameters.get(i)).getName().toString()) ) {
+									refactoredChanges++;
+									final String varName = ((SingleVariableDeclaration) newParameters.get(i)).getName().toString();
+									refactoredVariables.put( varName, 
+											new RefactoredVariable( varName, START, END ) );
+									refactoringLines.add( FILENAME + ":" + refactoringLine );
+								}
+							}
+						}
 						break;
 					case ASTNode.QUALIFIED_NAME:
-//						System.out.println( "Pame Paketo..." );
-						// TODO this is refactoring. Do not add to the larger dataset
 						refactoredChanges++;
+						refactoringLines.add( FILENAME + ":" + refactoringLine );
+						break;
 					case ASTNode.SIMPLE_TYPE:
-//						System.out.println( "Is this type refactoring?" );
-//						System.out.println( oldNode.getParent() );
-//						System.out.println( oldNode.getParent().getNodeType() );
-//						refactoredChanges++;
 						break;
 					case ASTNode.STRING_LITERAL:
-//						refactoredChanges++;
 						break;
 					case ASTNode.INFIX_EXPRESSION:
-//						if ( ((InfixExpression) newNode).getLeftOperand().getNodeType() == ASTNode.STRING_LITERAL && 
-//									((InfixExpression) newNode).getRightOperand().getNodeType() == 
-//									ASTNode.STRING_LITERAL && ((InfixExpression) newNode).getOperator() == Operator.PLUS ) {
-//							
-//							if ( oldNode.getNodeType() == ASTNode.STRING_LITERAL ) {
-//								refactoredChanges++;
-//							}
-//							else if ( oldNode.getNodeType() == ASTNode.INFIX_EXPRESSION  ) {
-//								if ( ((InfixExpression) oldNode).getLeftOperand().getNodeType() == ASTNode.STRING_LITERAL && 
-//										((InfixExpression) oldNode).getRightOperand().getNodeType() == 
-//										ASTNode.STRING_LITERAL && ((InfixExpression) oldNode).getOperator() == 
-//										Operator.PLUS ) refactoredChanges++;
-//							}
-//						}
 						break;
 					case ASTNode.PRIMITIVE_TYPE: // changed primitive type
 						refactoredChanges++;
@@ -1413,8 +1437,6 @@ public class SStuBsMiner {
 						refactoredChanges++;
 						break;
 					case ASTNode.NUMBER_LITERAL:
-//						if ( newNode.getParent().getNodeType() == ASTNode.VARIABLE_DECLARATION_FRAGMENT ) 
-//							refactoredChanges++;
 						break;
 					case ASTNode.SWITCH_CASE:
 						refactoredChanges++;
@@ -1425,27 +1447,12 @@ public class SStuBsMiner {
 						refactoredChanges++;
 						break;
 					default:
-//						System.out.println( newNode.getNodeType() );
-//						if ( newNode.toString().length() < 200 && newNode.toString().contains("ALLUXIO") ) {
-//							System.out.println( newNode.toString() );
-//							System.out.println( newNode.getParent().toString() );
-//							System.out.println( newNode.getParent().getNodeType() );
-//							System.out.println( ASTs.get(t) );	
-//						}
 						break;
 					}
 				}
 			}
 		}
 		
-		if ( refactoredChanges == 0 ) {
-//			for ( int t = 1; t < ASTs.size(); t++ ) {
-//				SimpleImmutableEntry<ASTNode, ASTNode> nodesDiff = 
-//						ASTDifferenceLocator.getFirstDifferentNode( ASTs.get(t), originalAST );
-//				System.out.println( nodesDiff.getKey() );
-//				System.out.println( nodesDiff.getKey().getNodeType() );
-//			}
-		}
 		return refactoredChanges;
 	}
 	
@@ -1457,9 +1464,6 @@ public class SStuBsMiner {
 		final String FILENAME = diff.getNewPath();
 		
 		// Second pass. Spots refactored functions, variables, and classes uses across files.
-//		System.out.println( );
-//		System.out.println( "Spot refactorings2" );
-//		System.out.println( diff );
 		
 		// Get old and new file contents
 		ObjectId newFileId = diff.getNewId().toObjectId();
@@ -1495,7 +1499,7 @@ public class SStuBsMiner {
 					RefactoredVariablesVisitor varVisitor = new RefactoredVariablesVisitor( refactoredVariables );
 					RefactoredFunctionsVisitor funcVisitor = new RefactoredFunctionsVisitor( refactoredFunctions );
 					final int CURRENT_REFACTORED_CHANGES = refactoredChanges;
-					
+						
 					switch ( newNode.getNodeType() ) {
 					case ASTNode.ASSIGNMENT:
 						newNode.accept( varVisitor );
@@ -1503,7 +1507,6 @@ public class SStuBsMiner {
 						
 						newNode.accept( funcVisitor );
 						refactoredChanges += funcVisitor.getRefactoredFuncs();
-						
 						break;
 					case ASTNode.INFIX_EXPRESSION:
 						newNode.accept( varVisitor );
@@ -1511,14 +1514,6 @@ public class SStuBsMiner {
 						
 						newNode.accept( funcVisitor );
 						refactoredChanges += funcVisitor.getRefactoredFuncs();
-						
-//						if ( refactoredVariables.containsKey( 
-//								((InfixExpression) newNode).getLeftOperand().toString() ) || 
-//								refactoredVariables.containsKey( 
-//										((InfixExpression) newNode).getRightOperand().toString() ) ) {
-//							refactoredChanges++;
-//							System.out.println( "Des expression: " + newNode );
-//						}
 						break;
 					case ASTNode.METHOD_INVOCATION:
 						newNode.accept( varVisitor );
@@ -1526,7 +1521,6 @@ public class SStuBsMiner {
 						
 						newNode.accept( funcVisitor );
 						refactoredChanges += funcVisitor.getRefactoredFuncs();
-						
 						break;
 					case ASTNode.CLASS_INSTANCE_CREATION:
 						// Probably unnecessary
@@ -1542,7 +1536,20 @@ public class SStuBsMiner {
 							refactoredChanges++;
 						}
 						break;
+					case ASTNode.FIELD_ACCESS:
+						if ( ((FieldAccess) newNode).getExpression().toString().equals("this") ) {
+							if ( refactoredVariables.containsKey( 
+									((FieldAccess) newNode).getName().getIdentifier() ) ) refactoredChanges++;
+						}
+						break;
 					default:
+						newNode.accept( varVisitor );
+						refactoredChanges += varVisitor.getRefactoredVars();
+						
+						newNode.accept( funcVisitor );
+						refactoredChanges += funcVisitor.getRefactoredFuncs();
+						int refactoringLine = ASTs.get(t).getLineNumber( newNode.getStartPosition() );
+						if ( refactoringLines.contains( FILENAME + ":" + refactoringLine ) ) refactoredChanges = 0;
 						break;
 					}
 					
@@ -1631,7 +1638,6 @@ public class SStuBsMiner {
 					commentLinesMap.put( i, inComment );
 				}
 			}
-//			commentLinesMap.put( i, inComment );
 		}
 		
 		return commentLinesMap;
@@ -1839,7 +1845,6 @@ public class SStuBsMiner {
 			e.printStackTrace();
 		}
 		
-//		return isOneLineChange && notCommentChange;
 		return editTypes;
 	}
 	
@@ -2041,10 +2046,17 @@ public class SStuBsMiner {
 		return stems;
 	}
 	
+	
+	public void saveToJSON() throws IOException {
+		sstubsWriter.write(  objGson.toJson( minedSstubs ) );
+		bugsWriter.write(  objGson.toJson( minedBugs ) );
+	}
+	
 	public void completeMining() {
 		try {
 			sstubsWriter.close();
 			bugsWriter.close();
+			patchesSStuBWriter.close();
 			patchesWriter.close();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -2060,7 +2072,9 @@ public class SStuBsMiner {
 	 */
 	public static void main(String[] args) throws Exception {
 		// Read the repository heads
-		final String topJProjectsPath = "/home/mpatsis/src/programRepair/GithubRepos/topJProjects/";
+		final String topJProjectsPath = args[0];
+//		final String topJProjectsPath = "/home/mpatsis/src/programRepair/GithubRepos/topJProjects/";
+//		final String topJProjectsPath = "/disk/scratch1/mpatsis/topJavaProjects/";
 
 		Hashtable<String, String> repoHeads = null;
 		try {
@@ -2077,10 +2091,10 @@ public class SStuBsMiner {
 		catch (ClassNotFoundException e) {
 			out.println( e.getMessage() );
 		}
-
 		
-		final File DATASET_EXPORT_DIR = new File( "/home/mpatsis/src/programRepair/SStuBsDataset/" );
-//		final File DATASET_EXPORT_DIR = new File( "/disk/scratch1/mpatsis/SStuBsDataset/" );
+		final File DATASET_EXPORT_DIR = new File(args[1]);
+//		final File DATASET_EXPORT_DIR = new File( "/home/mpatsis/src/programRepair/SStuBsDataset/" );
+//		final File DATASET_EXPORT_DIR = new File( "/disk/scratch1/mpatsis/JavaSStuBsDataset/" );
 		try {
 			if ( !DATASET_EXPORT_DIR.exists() ) DATASET_EXPORT_DIR.mkdir();
 		}
@@ -2097,10 +2111,14 @@ public class SStuBsMiner {
 		for ( File repoDir : reposList ) {
 			if ( !repoDir.isDirectory() ) continue;
 			System.out.println( "Mining repository: " + repoDir.getAbsolutePath() );
+//			if ( !repoDir.getName().equals("wildfly.wildfly") ) continue;
 			miner.mineSStuBs( repoDir.getAbsolutePath() );			
 			System.out.println( "Projects Mined: " + ++p );
 			System.gc();
+//			break;
 		}
+		
+		miner.saveToJSON();
 		miner.completeMining();
 		
 		int differentMethodSameArgs = 0;
@@ -2185,7 +2203,6 @@ public class SStuBsMiner {
 		System.out.println( "ChangeCallerInFunctionCall:" + changeCallerInFunctionCall );
 		System.out.println( "ChangeIdentifier:" + changeIdentifier );
 		System.out.println( "ChangeNumeral:" + changeNumeral );
-		System.out.println( "AssignmentsCounter:" + miner.countAssignments );
 		System.out.println( "AddThrowsExceptionCounter:" + addThrowsException );
 		System.out.println( "DeleteThrowsExceptionCounter:" + deleteThrowsException );
 		System.out.println( "MoreSpecificIfCounter:" + moreSpecificIf );

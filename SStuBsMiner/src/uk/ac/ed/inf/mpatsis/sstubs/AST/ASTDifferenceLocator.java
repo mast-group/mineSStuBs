@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NumberLiteral;
 import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.StructuralPropertyDescriptor;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -727,9 +728,26 @@ public class ASTDifferenceLocator {
 	public static boolean isChangeIdentifier( ASTNode newNode, ASTNode oldNode ) {
 		boolean foundNameDifference = false;
 		
-		if (newNode.getNodeType() != oldNode.getNodeType()) {
+		int newNodeType = newNode.getNodeType();
+		int oldNodeType = oldNode.getNodeType();
+		if (newNodeType != oldNodeType) {
 			return false;
 		}
+		
+		// Ignore MethodDeclaration, ClassDeclaration, VariableDeclaration
+		if ( newNodeType == ASTNode.METHOD_DECLARATION || oldNodeType == ASTNode.METHOD_DECLARATION || 
+				newNodeType == ASTNode.TYPE_DECLARATION || oldNodeType == ASTNode.TYPE_DECLARATION || 
+				newNodeType == ASTNode.TYPE_DECLARATION_STATEMENT || 
+				oldNodeType == ASTNode.TYPE_DECLARATION_STATEMENT || 
+				newNodeType == ASTNode.VARIABLE_DECLARATION_STATEMENT || 
+				oldNodeType == ASTNode.VARIABLE_DECLARATION_STATEMENT || 
+				newNodeType == ASTNode.VARIABLE_DECLARATION_FRAGMENT || 
+				oldNodeType == ASTNode.VARIABLE_DECLARATION_FRAGMENT ||
+				newNodeType == ASTNode.VARIABLE_DECLARATION_EXPRESSION || 
+				oldNodeType == ASTNode.VARIABLE_DECLARATION_EXPRESSION ) {
+			return false;
+		}
+		
 		List<StructuralPropertyDescriptor> props = newNode.structuralPropertiesForType();
 		List<StructuralPropertyDescriptor> rightProps = oldNode.structuralPropertiesForType();
 		if ( props.size() != rightProps.size() ) 
@@ -1171,7 +1189,9 @@ public class ASTDifferenceLocator {
 		List<ASTNode> newParameters = newNode.parameters();
 		List<ASTNode> oldParameters = oldNode.parameters();
 		for ( int i = 0; i < newParameters.size(); i++ ) {
-			if ( !equals( newParameters.get(i), oldParameters.get(i) ) ) return true;
+			if ( !equals( newParameters.get(i), oldParameters.get(i) ) && 
+					((SingleVariableDeclaration) newParameters.get(i)).getType().toString() !=
+					((SingleVariableDeclaration) oldParameters.get(i)).getType().toString()) return true;
 		}
 		return false;
 	}

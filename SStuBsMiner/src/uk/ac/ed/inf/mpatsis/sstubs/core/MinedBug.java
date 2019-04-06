@@ -3,6 +3,7 @@
  */
 package uk.ac.ed.inf.mpatsis.sstubs.core;
 
+import com.google.gson.Gson;
 
 /**
  * @author mpatsis
@@ -64,6 +65,13 @@ public class MinedBug {
 		}
 		
 		return builder.toString();
+	}
+	
+	
+	public String toGson() {
+		Gson gson = new Gson();
+		final String JSON = gson.toJson(this);
+		return JSON;
 	}
 	
 	
