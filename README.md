@@ -27,26 +27,24 @@ Projects | Bug Commits | Buggy Statements | Bug Statements per Commit | SStuBs
 
 
 ## SStuB Statistics
--------------------------------------------------------------------------\
-|	Pattern Name		Instances	Instances Large     	|\
-+-----------------------------------------------------------------------+\
-| Change Idenfier Used  	   3290		      22773      	|\
-| Change Numeric Literal	   1178   	      5447       	|\
-| Change Boolean Literal	   166	  	      1841       	|\
-| Change Modifier       	   1028   	      5010       	|\
-| Wrong Function Name   	   1491   	      10179      	|\
-| Same Function More Args	   807   	      5100       	|\
-| Same Function Less Args	   185   	      1588       	|\
-| Same Function Change Caller	   196   	      1504       	|\
-| Same Function Swap Args	   131   	      612       	|\
-| Change Binary Operator	   327   	      2241       	|\
-| Change Unary Operator		   174   	      1016       	|\
-| Change Operand        	   127   	      807       	|\
-| Less Specific If      	   220   	      2813       	|\
-| More Specific If      	   203   	      2381       	|\
-| Missing Throws Exception	   69   	      206       	|\
-| Delete Throws Exception	   47   	      508       	|\
-+-----------------------------------------------------------------------+\
+Pattern Name	|	Instances|	Instances Large     
+----------------|----------------|-----------------------
+| Change Idenfier Used  	|   3290	|      22773      	
+| Change Numeric Literal	|   1178   	|      5447       	
+| Change Boolean Literal	|   166	  	|      1841       	
+| Change Modifier       	|   1028   	|      5010       	
+| Wrong Function Name   	|   1491   	|      10179      	
+| Same Function More Args	|   807   	|      5100       	
+| Same Function Less Args	|   185   	|      1588       	
+| Same Function Change Caller	|   196   	|      1504       	
+| Same Function Swap Args	|   131   	|      612       	
+| Change Binary Operator	|   327   	|      2241       	
+| Change Unary Operator		|   174   	|      1016       	
+| Change Operand        	|   127   	|      807       	
+| Less Specific If      	|   220   	|      2813       	
+| More Specific If      	|   203   	|      2381       	
+| Missing Throws Exception	|   69   	|      206       	
+| Delete Throws Exception	|   47   	|      508       	
 
 
 ## Use
