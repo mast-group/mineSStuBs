@@ -1,10 +1,10 @@
-# SStuBs-mining\
+# SStuBs-mining
 Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.7488/ds/2528).\
 \
-# Running the tool\
+# Running the tool
 java -jar miner.jar PROJECTS_DIR DATASET_SAVE_DIR
 
-# About the Dataset\
+# About the Dataset
 The ManySStuBs4J corpus contains simple statement bugs mined from open-source Java projects hosted in GitHub.\
 There are two variations of the dataset. One mined from the 100 Java Maven Projects and one mined from the top 1000 Java Projects.\
 A project's popularity is determined by computing the sum of z-scores of its forks and watchers.\
@@ -19,16 +19,14 @@ Any bugs that fit one of 16 patterns are also annotated by which pattern(s) they
 We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).\
 \
 
-## Corpus Statistics\
------------------------------------------------------------------------------------------------------------------\
-|	Projects	Bug Commits	Buggy Statements	Bug Statements per Commit	SStuBs     	|\
-+---------------------------------------------------------------------------------------------------------------+\
-| 100 Java Maven  	  13000		    24412		          1.88      		7824		|\
-| 100 Java	   	  87000   	    5447		          1.77       		51537		|\
-+---------------------------------------------------------------------------------------------------------------+\
+## Corpus Statistics
+Projects | Bug Commits | Buggy Statements | Bug Statements per Commit | SStuBs
+---------|-------------|------------------|---------------------------|-------------------------------------------
+100 Java Maven  |	  13000		   | 24412	|	          1.88    |  		7824
+100 Java	|  	  87000   	   | 5447	|	          1.77     |  		51537
 
 
-##SStuB Statistics\
+## SStuB Statistics
 -------------------------------------------------------------------------\
 |	Pattern Name		Instances	Instances Large     	|\
 +-----------------------------------------------------------------------+\
@@ -49,9 +47,9 @@ We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).
 | Missing Throws Exception	   69   	      206       	|\
 | Delete Throws Exception	   47   	      508       	|\
 +-----------------------------------------------------------------------+\
-\
 
-##Use\
+
+## Use
 The Corpus can be downloaded via the [Edinburgh Datashare](https://doi.org/10.7488/ds/2528).\
 The ManySStuBs4J Corpus is an automatically mined collection of Java bugs at large-scale.\
 We note that the automatic extraction could potentially insert some noise. \
