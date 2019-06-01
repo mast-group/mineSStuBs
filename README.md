@@ -75,7 +75,7 @@ The corpus was collected for the work related to:\
 All files can be loaded via any JSON library.
 
 
-##JSON Fields
+## JSON Fields
 The SStuBs contain the following fields:\
 
 "bugType"	:	The bug type (16 possible values)\
