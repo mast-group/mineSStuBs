@@ -64,9 +64,9 @@ The corpus was collected for the work related to:\
 	year={2019},\
 	pages={},\
 	organization={}\
-}\
+}
 
-##Files\
+## Files
 100 Java Maven Project Bugs				bugs.json\
 1000 Java Project Bugs					bugsLarge.json\
 100 Java Maven Project SStuBs				sstubs.json\
@@ -76,18 +76,18 @@ All files can be loaded via any JSON library.
 
 
 ##JSON Fields
-The SStuBs contain the following fields:
+The SStuBs contain the following fields:\
 
-"bugType"	:	The bug type (16 possible values)
-"commitSHA1"	:	The hash of the commit fixing the bug.
-"commitFile"	:	Path of the fixed file.
-"patch"  	:	The diff of the change.
-"projectName"	:	The concatenated repo owner and repo name separated by a '.'.
-"lineNum"	:	The line in which the bug exists.
-"nodeStartChar"	:	The character position at which the affected ASTNode starts.
-"before"	:	The affected AST node text before the fix. (This field does not appear in some SStuB types for which it is not useful, e.g. Change Numeric Literal)
-"after"		:	The affected AST node text after the fix. (This field does not appear in some SStuB types for which it is not useful, e.g. Change Numeric Literal)
-
-Similarly the bugs in bugs.json contain the above fields except bugType.
+"bugType"	:	The bug type (16 possible values)\
+"commitSHA1"	:	The hash of the commit fixing the bug.\
+"commitFile"	:	Path of the fixed file.\
+"patch"  	:	The diff of the change.\
+"projectName"	:	The concatenated repo owner and repo name separated by a '.'.\
+"lineNum"	:	The line in which the bug exists.\
+"nodeStartChar"	:	The character position at which the affected ASTNode starts.\
+"before"	:	The affected AST node text before the fix. (This field does not appear in some SStuB types for which it is not useful, e.g. Change Numeric Literal)\
+"after"		:	The affected AST node text after the fix. (This field does not appear in some SStuB types for which it is not useful, e.g. Change Numeric Literal)\
+\
+Similarly the bugs in bugs.json contain the above fields except bugType.\
 All bugs appearing in sstubs.json have also an entry in bugs.json.
 
