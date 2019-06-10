@@ -1,6 +1,6 @@
 # SStuBs-mining
 Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.7488/ds/2528).
-\
+
 # Running the tool
 java -jar miner.jar PROJECTS_DIR DATASET_SAVE_DIR
 
@@ -16,8 +16,8 @@ This method has also been used before to extract bug commits (Ray et al., 2015; 
 \
 The bugs are stored in a JSON file (each version of the dataset has each own instance of this file).\
 Any bugs that fit one of 16 patterns are also annotated by which pattern(s) they fit in a separate JSON file (each version of the dataset has each own instance of this file).\
-We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).\
-\
+We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).
+
 
 ## Corpus Statistics
 Projects | Bug Commits | Buggy Statements | Bug Statements per Commit | SStuBs
