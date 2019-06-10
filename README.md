@@ -1,5 +1,5 @@
 # SStuBs-mining
-Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.7488/ds/2528).\
+Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.7488/ds/2528).
 \
 # Running the tool
 java -jar miner.jar PROJECTS_DIR DATASET_SAVE_DIR
