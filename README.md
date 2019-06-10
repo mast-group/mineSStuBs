@@ -53,13 +53,13 @@ The ManySStuBs4J Corpus is an automatically mined collection of Java bugs at lar
 We note that the automatic extraction could potentially insert some noise. \
 However, the amount of inserted noise is deemed to be almost negligible (see about).\
 We also note that the code of the Java projects is not ours but is open-source. \
-Please respect the license of each project.\
+Please respect the license of each project.
 
-The corpus was collected for the work related to:\
+The corpus was collected for the work related to:
 
 @inproceedings{ManySStuBs4JCorpus2019,\
 	author={Karampatsis, Rafael-Michael and Sutton, Charles},\
-	title={{How Often Do Single-Statement Bugs Occur?\\ The ManySStuBs4J Dataset}},\
+	title={{How Often Do Single-Statement Bugs Occur? The ManySStuBs4J Dataset}},\
 	booktitle={},\
 	year={2019},\
 	pages={},\
@@ -76,7 +76,7 @@ All files can be loaded via any JSON library.
 
 
 ## JSON Fields
-The SStuBs contain the following fields:\
+The SStuBs contain the following fields:
 
 "bugType"	:	The bug type (16 possible values)\
 "commitSHA1"	:	The hash of the commit fixing the bug.\
