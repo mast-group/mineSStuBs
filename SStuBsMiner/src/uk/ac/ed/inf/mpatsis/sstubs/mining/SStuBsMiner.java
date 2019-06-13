@@ -279,7 +279,6 @@ public class SStuBsMiner {
 				if ( commit.getParentCount() == 0 ) break;
 				RevCommit parent = commit.getParent(0);
 				List<DiffEntry> diffs = df.scan( parent.getTree(), commit.getTree() );
-				int javaFiles = 0;
 				ArrayList<MinedSStuB> currentMinedStubs = new ArrayList<MinedSStuB>();
 				ArrayList<MinedBug> currentMinedBugs = new ArrayList<MinedBug>();
 				ArrayList<String> currentSStuBPatches = new ArrayList<String>();
@@ -303,7 +302,6 @@ public class SStuBsMiner {
 					// Modification on a Java file.
 					else if ( diff.getChangeType().compareTo( ChangeType.MODIFY ) == 0
 							&& diff.getNewPath().endsWith( ".java" ) ) {
-						javaFiles++;
 						df.format( diff );
 						
 						if ( out.toString().length() > 5000000 ) break;
@@ -342,7 +340,6 @@ public class SStuBsMiner {
 					// Modification on a Java file.
 					else if ( diff.getChangeType().compareTo( ChangeType.MODIFY ) == 0
 							&& diff.getNewPath().endsWith( ".java" ) ) {
-						javaFiles++;
 						df.format( diff );
 						
 						if ( out.toString().length() > 5000000 ) break;
