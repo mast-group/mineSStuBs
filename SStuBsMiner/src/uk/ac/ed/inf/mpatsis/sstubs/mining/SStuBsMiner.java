@@ -242,6 +242,8 @@ public class SStuBsMiner {
 			df.setDetectRenames( true );
 			
 			for ( RevCommit commit : commitSet ) {
+				out.reset();
+				
 				String commitPatches = null;
 				commits++;
 				List<String> stems = getStemList( commit.getFullMessage() );
@@ -308,7 +310,7 @@ public class SStuBsMiner {
 						List<EditType> editTypes = processParseEdits( diff, out );
 						boolean noMultistatenentChanges = noMultistatenentChanges( editTypes );
 						
-						ArrayList<CompilationUnit> ASTs = (ArrayList<CompilationUnit>) getASTs( diff, out, editTypes );
+						ArrayList<CompilationUnit> ASTs = (ArrayList<CompilationUnit>) getASTs( diff, editTypes );
 						if ( noMultistatenentChanges( editTypes ) && !onlyCommentEdits( editTypes ) &&
 								hasSingleStatementEdit( editTypes ) ) {
 							nonCommentChanges = true;
@@ -347,7 +349,7 @@ public class SStuBsMiner {
 						List<EditType> editTypes = processParseEdits( diff, out );
 						boolean noMultistatenentChanges = noMultistatenentChanges( editTypes );
 						
-						ArrayList<CompilationUnit> ASTs = (ArrayList<CompilationUnit>) getASTs( diff, out, editTypes );
+						ArrayList<CompilationUnit> ASTs = (ArrayList<CompilationUnit>) getASTs( diff, editTypes );
 						
 						if ( noMultistatenentChanges( editTypes ) && !onlyCommentEdits( editTypes ) &&
 								hasSingleStatementEdit( editTypes ) ) {
@@ -1802,7 +1804,7 @@ public class SStuBsMiner {
 		return editTypes;
 	}
 	
-	private List<CompilationUnit> getASTs( DiffEntry diff, ByteArrayOutputStream out, List<EditType> editTypes ) {
+	private List<CompilationUnit> getASTs( DiffEntry diff, List<EditType> editTypes ) {
 		try {
 			List<CompilationUnit> ASTs = new ArrayList<CompilationUnit>();
 			
