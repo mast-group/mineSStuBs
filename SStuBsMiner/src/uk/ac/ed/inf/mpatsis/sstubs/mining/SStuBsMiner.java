@@ -302,6 +302,7 @@ public class SStuBsMiner {
 					// Modification on a Java file.
 					else if ( diff.getChangeType().compareTo( ChangeType.MODIFY ) == 0
 							&& diff.getNewPath().endsWith( ".java" ) ) {
+						out.reset();
 						df.format( diff );
 						
 						if ( out.toString().length() > 5000000 ) break;
@@ -340,6 +341,7 @@ public class SStuBsMiner {
 					// Modification on a Java file.
 					else if ( diff.getChangeType().compareTo( ChangeType.MODIFY ) == 0
 							&& diff.getNewPath().endsWith( ".java" ) ) {
+						out.reset();
 						df.format( diff );
 						
 						if ( out.toString().length() > 5000000 ) break;
@@ -2029,7 +2031,7 @@ public class SStuBsMiner {
 			repoHeads = (Hashtable<String, String>) ois.readObject();
 			ois.close();
 			fileIn.close();
-			System.out.println( "Serialized data was loaded from wrongFunctionBugs.ser" );
+			System.out.println( "Serialized data was loaded from repoHeads.ser" );
 		}
 		catch( IOException ioe ) {
 			out.println( ioe.getMessage() );
