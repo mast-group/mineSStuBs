@@ -74,7 +74,7 @@
             </dependency>
         </dependencies>
     <repositories>
-        <!-- This repository is actually needed for revapi to compare against the last Spoon Snapshot -->
+        <!-- This repository is needed for org.eclipse.egit.core -->
         <repository>
             <id>Eclipse Snapshot</id>
             <name>repo.eclipse.org</name>
