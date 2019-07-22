@@ -21,56 +21,66 @@
   		<groupId>org.eclipse.platform</groupId>
   		<artifactId>org.eclipse.core.runtime</artifactId>
   		<version>3.12.0</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>edu.stanford.nlp</groupId>
   		<artifactId>stanford-corenlp</artifactId>
   		<version>3.7.0</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.slf4j</groupId>
   		<artifactId>slf4j-api</artifactId>
   		<version>1.7.25</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.slf4j</groupId>
   		<artifactId>slf4j-simple</artifactId>
   		<version>1.7.25</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.eclipse.platform</groupId>
   		<artifactId>org.eclipse.core.resources</artifactId>
   		<version>3.11.1</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.eclipse.platform</groupId>
   		<artifactId>org.eclipse.core.jobs</artifactId>
   		<version>3.8.0</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.eclipse.jdt</groupId>
   		<artifactId>org.eclipse.jdt.core</artifactId>
   		<version>3.12.2</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.eclipse.jdt</groupId>
   		<artifactId>org.eclipse.jdt.launching</artifactId>
   		<version>3.8.101</version>
-  		<scope>runtime</scope>
   	</dependency>
   	<dependency>
   		<groupId>org.eclipse.jgit</groupId>
   		<artifactId>org.eclipse.jgit</artifactId>
   		<version>4.6.1.201703071140-r</version>
-  		<scope>runtime</scope>
   	</dependency>
-  	
-  </dependencies>
+        <dependency>
+            <groupId>org.eclipse.egit</groupId>
+            <artifactId>org.eclipse.egit.core</artifactId>
+            <version>5.3.0-SNAPSHOT</version>
+        </dependency>  	
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.5</version>
+            </dependency>
+        </dependencies>
+    <repositories>
+        <!-- This repository is actually needed for revapi to compare against the last Spoon Snapshot -->
+        <repository>
+            <id>Eclipse Snapshot</id>
+            <name>repo.eclipse.org</name>
+            <url>https://repo.eclipse.org/content/unzip/snapshots.unzip</url>
+            <snapshots/>
+        </repository>
+    </repositories>
+
 </project>
