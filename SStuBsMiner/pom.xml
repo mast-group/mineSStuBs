@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.eclipse.egit</groupId>
             <artifactId>org.eclipse.egit.core</artifactId>
-            <version>5.3.0-SNAPSHOT</version>
+            <version>4.7.1.201706071930-r</version>
         </dependency>  	
         <dependency>
             <groupId>com.google.code.gson</groupId>
@@ -76,10 +76,13 @@
     <repositories>
         <!-- This repository is needed for org.eclipse.egit.core -->
         <repository>
-            <id>Eclipse Snapshot</id>
-            <name>repo.eclipse.org</name>
+            <id>Eclipse-Snapshot</id>
             <url>https://repo.eclipse.org/content/unzip/snapshots.unzip</url>
             <snapshots/>
+        </repository>
+        <repository>
+            <id>Eclipse-Egit-Release</id>
+            <url>https://repo.eclipse.org/content/repositories/egit-releases/</url>
         </repository>
     </repositories>
 
