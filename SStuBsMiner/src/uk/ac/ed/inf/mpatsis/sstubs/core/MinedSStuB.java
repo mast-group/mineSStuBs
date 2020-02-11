@@ -13,10 +13,12 @@ public class MinedSStuB extends MinedBug {
 	/**
 	 * 
 	 */
-	public MinedSStuB( String commitSHA1, String commitFile, 
-			BugType bugType, String patch, String projectName, int lineNum, int nodeStartChar,
+	public MinedSStuB( String commitSHA1, String parentCommitSHA1, String commitFile, 
+			BugType bugType, String patch, String projectName, int oldLineNum, int oldNodeStartChar, int oldNodeLength, int newLineNum, 
+			int newNodeStartChar, int newNodeLength, 
 			String before, String after ) {
-		super( commitSHA1, commitFile, patch, projectName, lineNum, nodeStartChar, before, after );
+		super( commitSHA1, parentCommitSHA1, commitFile, patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+				newLineNum, newNodeStartChar, newNodeLength, before, after );
 		this.bugType = bugType;
 	}
 	
@@ -29,24 +31,34 @@ public class MinedSStuB extends MinedBug {
 	@Override
 	public String toString( boolean getPatch ) {
 		StringBuilder builder = new StringBuilder();
-		builder.append( commitSHA1 );
+		builder.append( fixCommitSHA1 );
 		builder.append( TAB );
-		builder.append( commitFile );
+		builder.append( fixCommitParentSHA1 );
+		builder.append( TAB );
+		builder.append( bugFilePath );
 		builder.append( TAB );
 		builder.append( projectName );
 		builder.append( TAB );
-		builder.append( lineNum );
+		builder.append( bugLineNum );
 		builder.append( TAB );
-		builder.append( nodeStartChar );
+		builder.append( bugNodeStartChar );
 		builder.append( TAB );
-		builder.append( before );
+		builder.append( bugNodeLength );
 		builder.append( TAB );
-		builder.append( after );
+		builder.append( fixLineNum );
+		builder.append( TAB );
+		builder.append( fixNodeStartChar );
+		builder.append( TAB );
+		builder.append( fixNodeLength );
+		builder.append( TAB );
+		builder.append( sourceBeforeFix );
+		builder.append( TAB );
+		builder.append( sourceAfterFix );
 		builder.append( TAB );
 		builder.append( bugType );
 		builder.append( "\n" );
 		if ( getPatch ) {
-			builder.append( patch );
+			builder.append( fixPatch );
 			builder.append( "\n-----------------------------------------\n\n" );
 		}
 		

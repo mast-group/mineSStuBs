@@ -50,8 +50,8 @@ public class ExtractRepoHeads {
 		Runtime rt = Runtime.getRuntime();
 		Hashtable<String, String> repoHeads = new Hashtable<String, String>();
 		
-		final File repositoriesDirectory = new File( "/disk/scratch1/mpatsis/topJavaProjects/" );
-//		final File repositoriesDirectory = new File( "/home/mpatsis/src/programRepair/GithubRepos/topJProjects/" );
+//		final File repositoriesDirectory = new File( "/disk/scratch1/mpatsis/topJavaProjects/" );
+		final File repositoriesDirectory = new File( "/media/mpatsis/SeagateExternal/PhD/rafaelository/data/GHCorpora/MAST/testRepos/" );
 		
 		File [] reposList = repositoriesDirectory.listFiles();
 		Arrays.sort( reposList );

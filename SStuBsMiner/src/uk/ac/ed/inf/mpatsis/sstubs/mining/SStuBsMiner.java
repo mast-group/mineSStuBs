@@ -184,14 +184,14 @@ public class SStuBsMiner {
 		
 		try {
 			patchesSStuBWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/patchesSStuBsT.json" ) ) ) );
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/patchesSStuBs.json" ) ) ) );
 		} catch ( FileNotFoundException fnfe ) {
 			fnfe.printStackTrace();
 			System.exit(2);
 		}
 		try {
 			sstubsWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/sstubsT.json" ) ) ) );
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/sstubs.json" ) ) ) );
 		}
 		catch ( FileNotFoundException  fnfe ) {
 			fnfe.printStackTrace();
@@ -199,7 +199,7 @@ public class SStuBsMiner {
 		}
 		try {
 			bugsWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/bugsT.json" ) ) ) );
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/bugs.json" ) ) ) );
 		}
 		catch ( FileNotFoundException  fnfe ) {
 			fnfe.printStackTrace();
@@ -207,7 +207,7 @@ public class SStuBsMiner {
 		}
 		try {
 			patchesWriter = new BufferedWriter(new OutputStreamWriter( ( new FileOutputStream( 
-					DATASET_EXPORT_DIR.getAbsolutePath() + "/patcheTs.json" ) ) ) );
+					DATASET_EXPORT_DIR.getAbsolutePath() + "/patches.json" ) ) ) );
 		} catch ( FileNotFoundException fnfe ) {
 			fnfe.printStackTrace();
 			System.exit(5);
@@ -256,6 +256,7 @@ public class SStuBsMiner {
 					}
 				}
 				if ( !isBugFix ) continue;
+				if ( commit.getParentCount() == 0 ) break;
 								
 //				boolean oneLineOnly = true;
 				boolean fitsTemplate = false;
@@ -267,6 +268,7 @@ public class SStuBsMiner {
 				int refactoredChanges = 0;
 				
 				final String commitSHA1 = ObjectId.toString( commit.getId() );
+				final String parentCommitSHA1 = ObjectId.toString( commit.getParent(0).getId() );
 				final String[] split = repositoryDir.split( "/" );
 				final String projectName = split[split.length - 1];
 				
@@ -276,7 +278,6 @@ public class SStuBsMiner {
 				refactoringLines = new HashSet<String>();
 				
 				
-				if ( commit.getParentCount() == 0 ) break;
 				RevCommit parent = commit.getParent(0);
 				List<DiffEntry> diffs = df.scan( parent.getTree(), commit.getTree() );
 				ArrayList<MinedSStuB> currentMinedStubs = new ArrayList<MinedSStuB>();
@@ -379,9 +380,11 @@ public class SStuBsMiner {
 									
 									ASTNode newASTNode = nodesDiff.getKey();
 									ASTNode oldASTNode = nodesDiff.getValue();
-									MinedBug minedBug = new MinedBug(commitSHA1, commitFile, patch, projectName, 
+									MinedBug minedBug = new MinedBug(commitSHA1, parentCommitSHA1, commitFile, patch, projectName, 
+											 ((CompilationUnit) oldASTNode.getRoot()).getLineNumber( oldASTNode.getStartPosition() ), 
+											 oldASTNode.getStartPosition(), oldASTNode.getLength(), 
 											 ((CompilationUnit) newASTNode.getRoot()).getLineNumber( newASTNode.getStartPosition() ), 
-											 newASTNode.getStartPosition(), oldASTNode.toString().replaceAll( "\n", " " ), 
+											 newASTNode.getStartPosition(), newASTNode.getLength(), oldASTNode.toString().replaceAll( "\n", " " ), 
 											newASTNode.toString().replaceAll( "\n", " " ));
 									currentMinedBugs.add( minedBug );
 									
@@ -392,14 +395,20 @@ public class SStuBsMiner {
 										
 										// Does the Expression pair fit the ChangeUnaryOperator template?
 										if ( ASTDifferenceLocator.isChangeUnaryOperator( newNode, oldNode) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_UNARY_OPERATOR, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength,
 													nodeBeforeString, nodeAfterString );
 											currentMinedStubs.add( minedSStuB );
 											
@@ -422,14 +431,20 @@ public class SStuBsMiner {
 										Expression newNode = (Expression) nodesDiff.getKey();
 										Expression oldNode = (Expression) nodesDiff.getValue();
 										
-										final int nodeStartChar = newNode.getStartPosition();
-										final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
-										final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
-										final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
+										final int oldNodeStartChar = oldNode.getStartPosition();
+										final int oldNodeLength = oldNode.getLength();
+										final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+										final int newNodeStartChar = newNode.getStartPosition();
+										final int newNodeLength = newNode.getLength();
+										final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+										final String nodeTypeString = oldNode.getClass().getSimpleName();
+										final String nodeBeforeString = oldNode.getParent().toString().replaceAll( "\n", " " );
+										final String nodeAfterString = newNode.getParent().toString().replaceAll( "\n", " " );
 										
-										MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+										MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 												commitFile, BugType.CHANGE_IDENTIFIER, 
-												patch, projectName, lineNum, nodeStartChar, 
+												patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+												newLineNum, newNodeStartChar, newNodeLength,
 												nodeBeforeString, nodeAfterString );
 										currentMinedStubs.add( minedSStuB );
 										
@@ -450,14 +465,20 @@ public class SStuBsMiner {
 										ClassInstanceCreation oldNode = ( (ClassInstanceCreation) nodesDiff.getValue() );
 										// Is constructor call pair that fits same function swap arguments?
 										if ( ASTDifferenceLocator.isSwapArguments( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.SWAP_ARGUMENTS, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -472,14 +493,20 @@ public class SStuBsMiner {
 										}
 										// Is constructor call pair that fits same function deleted arguments?
 										else if ( ASTDifferenceLocator.isCallOverloadedMethodDeletedArgs( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1,
 													commitFile, BugType.OVERLOAD_METHOD_DELETED_ARGS, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -494,14 +521,20 @@ public class SStuBsMiner {
 										}
 										// Is constructor call pair that fits same function more arguments?
 										else if ( ASTDifferenceLocator.isCallOverloadedMethodMoreArgs( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.OVERLOAD_METHOD_MORE_ARGS, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -516,14 +549,20 @@ public class SStuBsMiner {
 										}
 										// Spots instances of swap boolean literal inside a constructor call.
 										else if ( ASTDifferenceLocator.isSwapBooleanLiteral( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.SWAP_BOOLEAN_LITERAL, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -540,14 +579,19 @@ public class SStuBsMiner {
 										
 										// Is method invocation pair that fits same function swap arguments?
 										if ( ASTDifferenceLocator.isSwapArguments( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
-													commitFile, BugType.SWAP_ARGUMENTS, patch, projectName, lineNum, 
-													nodeStartChar, nodeBeforeString, nodeAfterString );
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
+													commitFile, BugType.SWAP_ARGUMENTS, patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
 											
@@ -561,14 +605,20 @@ public class SStuBsMiner {
 										}
 										// Is method invocation pair that fits wrong function name?
 										else if ( ASTDifferenceLocator.isDifferentMethodSameArgs( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.DIFFERENT_METHOD_SAME_ARGS, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength,  
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -583,14 +633,20 @@ public class SStuBsMiner {
 										}
 										// Is method invocation pair that fits same function change caller?
 										else if ( ASTDifferenceLocator.isChangeCallerInFunctionCall( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_CALLER_IN_FUNCTION_CALL, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength,  
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -605,14 +661,20 @@ public class SStuBsMiner {
 										}
 										// Is method invocation pair that fits same function less arguments?
 										else if ( ASTDifferenceLocator.isCallOverloadedMethodDeletedArgs( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.OVERLOAD_METHOD_DELETED_ARGS, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength,  
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -627,14 +689,20 @@ public class SStuBsMiner {
 										}
 										// Is method invocation pair that fits same function more arguments?
 										else if ( ASTDifferenceLocator.isCallOverloadedMethodMoreArgs( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.OVERLOAD_METHOD_MORE_ARGS, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength,  
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -649,14 +717,20 @@ public class SStuBsMiner {
 										}
 										// Spots instances of swap boolean literal inside a method invocation.
 										else if ( ASTDifferenceLocator.isSwapBooleanLiteral( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.SWAP_BOOLEAN_LITERAL, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength,  
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -672,14 +746,20 @@ public class SStuBsMiner {
 										BooleanLiteral oldNode = ( (BooleanLiteral) nodesDiff.getValue() );
 										
 										if ( ASTDifferenceLocator.isSwapBooleanLiteral( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
-											final String nodeBeforeString = oldNode.booleanValue() + "";
-											final String nodeAfterString = newNode.booleanValue() + "";
+											final int oldNodeStartChar = oldNode.getParent().getStartPosition();
+											final int oldNodeLength = oldNode.getParent().getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getParent().getStartPosition();
+											final int newNodeLength = newNode.getParent().getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getParent().getClass().getSimpleName();
+											final String nodeBeforeString = oldNode.getParent().toString().replaceAll( "\n", " " );
+											final String nodeAfterString = newNode.getParent().toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.SWAP_BOOLEAN_LITERAL, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -701,14 +781,20 @@ public class SStuBsMiner {
 										
 										// Spots instances of change binary operator for InfixExpression pairs.
 										if ( ASTDifferenceLocator.isChangeOperator( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
-											final String nodeBeforeString = oldNode.getOperator().toString();
-											final String nodeAfterString = newNode.getOperator().toString();
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
+											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
+											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_OPERATOR, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -723,14 +809,20 @@ public class SStuBsMiner {
 										}
 										// Spots instances of change operand for InfixExpression pairs.
 										else if ( ASTDifferenceLocator.isChangeOperand( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
-											final String nodeBeforeString = oldNode.toString();
-											final String nodeAfterString = newNode.toString();
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
+											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
+											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_OPERAND, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -745,14 +837,20 @@ public class SStuBsMiner {
 										}
 										// Checks if it is an instance of more specific if/while
 										else if ( ASTDifferenceLocator.isMoreSpecificIf( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
-											final String nodeBeforeString = oldNode.toString();
-											final String nodeAfterString = newNode.toString();
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
+											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
+											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.MORE_SPECIFIC_IF, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -767,14 +865,20 @@ public class SStuBsMiner {
 										}
 										// Checks if it is an instance of less specific if/while
 										else if ( ASTDifferenceLocator.isLessSpecificIf( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
-											final String nodeBeforeString = oldNode.toString();
-											final String nodeAfterString = newNode.toString();
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
+											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
+											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.LESS_SPECIFIC_IF, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -799,15 +903,20 @@ public class SStuBsMiner {
 										
 										// Checks if it is an instance of change modifier.
 										if ( ASTDifferenceLocator.isChangeModifier( newNode, oldNode ) ) {
-//											System.out.println("ChangeModifier");
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.getModifiers() + "";
 											final String nodeAfterString = newNode.getModifiers() + "";
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_MODIFIER, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -832,15 +941,20 @@ public class SStuBsMiner {
 										
 										// Checks if it is an instance of change modifier.
 										if ( ASTDifferenceLocator.isChangeModifier( newNode, oldNode ) ) {
-//											System.out.println("ChangeModifier");
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.getModifiers() + "";
 											final String nodeAfterString = newNode.getModifiers() + "";
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_MODIFIER, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -865,14 +979,20 @@ public class SStuBsMiner {
 										// Checks if it is an instance of change modifier.
 										if ( ASTDifferenceLocator.isChangeModifier( newNode, oldNode ) ) {
 											
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.getModifiers() + "";
 											final String nodeAfterString = newNode.getModifiers() + "";
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_MODIFIER, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -887,14 +1007,20 @@ public class SStuBsMiner {
 										}
 										// Checks if the method declaration pair fits the missing throws exception pattern.
 										else if ( ASTDifferenceLocator.isAddThrowsException( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.getModifiers() + "";
 											final String nodeAfterString = newNode.getModifiers() + "";
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.ADD_THROWS_EXCEPTION, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -909,14 +1035,20 @@ public class SStuBsMiner {
 										}
 										// Checks if the method declaration pair fits the delete throws exception pattern.
 										else if ( ASTDifferenceLocator.isDeleteThrowsException( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.getModifiers() + "";
 											final String nodeAfterString = newNode.getModifiers() + "";
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.DELETE_THROWS_EXCEPTION, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -940,15 +1072,20 @@ public class SStuBsMiner {
 										TypeDeclaration oldNode = ( (TypeDeclaration) nodesDiff.getValue() );
 										// Checks if it is an instance of change modifier
 										if ( ASTDifferenceLocator.isChangeModifier( newNode, oldNode ) ) {
-//											System.out.println("ChangeModifier");
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.getModifiers() + "";
 											final String nodeAfterString = newNode.getModifiers() + "";
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_MODIFIER, 
-													patch, projectName, lineNum, nodeStartChar,
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
@@ -972,13 +1109,21 @@ public class SStuBsMiner {
 										NumberLiteral oldNode = (NumberLiteral) nodesDiff.getValue();
 										// Check whether the pair fits the change numeric literal pattern. 
 										if ( ASTDifferenceLocator.isChangeNumeral( newNode, oldNode ) ) {
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getParent().getStartPosition();
+											final int oldNodeLength = oldNode.getParent().getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getParent().getStartPosition();
+											final int newNodeLength = newNode.getParent().getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getParent().getClass().getSimpleName();
+											final String nodeBeforeString = oldNode.getParent().toString().replaceAll( "\n", " " );
+											final String nodeAfterString = newNode.getParent().toString().replaceAll( "\n", " " );
 											
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.CHANGE_NUMERAL, 
-													patch, projectName, lineNum, nodeStartChar,
-													null, null );
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
+													nodeBeforeString, nodeAfterString );
 											
 											currentMinedStubs.add( minedSStuB );
 											
@@ -1000,14 +1145,25 @@ public class SStuBsMiner {
 										ASTNode newNode = nodesDiff.getKey();
 										ASTNode oldNode = nodesDiff.getValue();
 										
-										final int nodeStartChar = newNode.getStartPosition();
-										final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+										if ( oldNode.getClass().getSimpleName().equals( "SimpleType" ) ) {
+											oldNode = oldNode.getParent();
+											newNode = newNode.getParent();
+										}
+										
+										final int oldNodeStartChar = oldNode.getStartPosition();
+										final int oldNodeLength = oldNode.getLength();
+										final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+										final int newNodeStartChar = newNode.getStartPosition();
+										final int newNodeLength = newNode.getLength();
+										final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+										final String nodeTypeString = oldNode.getClass().getSimpleName();
 										final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 										final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 
-										MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+										MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 												commitFile, BugType.CHANGE_IDENTIFIER, 
-												patch, projectName, lineNum, nodeStartChar, 
+												patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+												newLineNum, newNodeStartChar, newNodeLength, 
 												nodeBeforeString, nodeAfterString );
 										currentMinedStubs.add( minedSStuB );
 
@@ -1030,14 +1186,20 @@ public class SStuBsMiner {
 										// Checks if it is an instance of more specific if/while
 										if ( ASTDifferenceLocator.isMoreSpecificIf( newNode, oldNode ) && 
 												nodesDiff.getKey().getNodeType() != ASTNode.INFIX_EXPRESSION ) {										
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 	
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.MORE_SPECIFIC_IF, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											currentMinedStubs.add( minedSStuB );
 	
@@ -1052,14 +1214,20 @@ public class SStuBsMiner {
 										}
 										// Checks if it is an instance of less specific if/while
 										else if ( ASTDifferenceLocator.isLessSpecificIf( newNode, oldNode ) ) {										
-											final int nodeStartChar = newNode.getStartPosition();
-											final int lineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( nodeStartChar );
+											final int oldNodeStartChar = oldNode.getStartPosition();
+											final int oldNodeLength = oldNode.getLength();
+											final int oldLineNum = ((CompilationUnit) oldNode.getRoot()).getLineNumber( oldNodeStartChar );
+											final int newNodeStartChar = newNode.getStartPosition();
+											final int newNodeLength = newNode.getLength();
+											final int newLineNum = ((CompilationUnit) newNode.getRoot()).getLineNumber( newNodeStartChar );
+											final String nodeTypeString = oldNode.getClass().getSimpleName();
 											final String nodeBeforeString = oldNode.toString().replaceAll( "\n", " " );
 											final String nodeAfterString = newNode.toString().replaceAll( "\n", " " );
 	
-											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, 
+											MinedSStuB minedSStuB = new MinedSStuB( commitSHA1, parentCommitSHA1, 
 													commitFile, BugType.LESS_SPECIFIC_IF, 
-													patch, projectName, lineNum, nodeStartChar, 
+													patch, projectName, oldLineNum, oldNodeStartChar, oldNodeLength, 
+													newLineNum, newNodeStartChar, newNodeLength, 
 													nodeBeforeString, nodeAfterString );
 											currentMinedStubs.add( minedSStuB );
 	
@@ -2062,6 +2230,7 @@ public class SStuBsMiner {
 			miner.mineSStuBs( repoDir.getAbsolutePath() );			
 			System.out.println( "Projects Mined: " + ++p );
 			System.gc();
+//			if ( p > 10 ) break;
 		}
 		
 		miner.saveToJSON();

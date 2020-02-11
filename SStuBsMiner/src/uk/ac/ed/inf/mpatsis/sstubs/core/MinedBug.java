@@ -11,12 +11,13 @@ import com.google.gson.Gson;
  */
 public class MinedBug {
 
-	protected final String commitSHA1;
-	protected final String commitFile;
-	protected final String patch;
+	protected final String fixCommitSHA1, fixCommitParentSHA1;
+	protected final String bugFilePath;
+	protected final String fixPatch;
 	protected final String projectName;
-	protected final int lineNum, nodeStartChar;
-	protected final String before, after;
+	protected final int bugLineNum, bugNodeStartChar, bugNodeLength;
+	protected final int fixLineNum, fixNodeStartChar, fixNodeLength;
+	protected final String sourceBeforeFix, sourceAfterFix;
 	
 	protected final static String TAB = "\t";
 	
@@ -24,17 +25,25 @@ public class MinedBug {
 	/**
 	 * 
 	 */
-	public MinedBug( String commitSHA1, String commitFile, String patch, String projectName, 
-			int lineNum, int nodeStartChar, String before, String after ) {
-		this.commitSHA1 = commitSHA1;
-		this.commitFile = commitFile;
-		this.patch = patch;
+	public MinedBug( String commitSHA1, String parentCommitSHA1, String commitFile, String patch, String projectName, 
+			int oldLineNum, int oldNodeStartChar, int oldNodeLength, int newLineNum, 
+			int newNodeStartChar, int newNodeLength, String before, String after ) {
+		this.fixCommitSHA1 = commitSHA1;
+		this.fixCommitParentSHA1 = parentCommitSHA1;
+		this.bugFilePath = commitFile;
+		this.fixPatch = patch;
 		this.projectName = projectName;
 		
-		this.lineNum = lineNum;
-		this.nodeStartChar = nodeStartChar;
-		this.before = before;
-		this.after = after;
+		this.bugLineNum = oldLineNum;
+		this.bugNodeStartChar = oldNodeStartChar;
+		this.bugNodeLength = oldNodeLength;
+		
+		this.fixLineNum = newLineNum;
+		this.fixNodeStartChar = newNodeStartChar;
+		this.fixNodeLength = newNodeLength;
+		
+		this.sourceBeforeFix = before;
+		this.sourceAfterFix = after;
 	}
 	
 	
@@ -43,24 +52,40 @@ public class MinedBug {
 		return toString( false );
 	}
 	
+	
+	/**
+	 * 
+	 * @param getPatch
+	 * @return
+	 */
 	public String toString( boolean getPatch ) {
 		StringBuilder builder = new StringBuilder();
-		builder.append( commitSHA1 );
+		builder.append( fixCommitSHA1 );
 		builder.append( TAB );
-		builder.append( commitFile );
+		builder.append( fixCommitParentSHA1 );
+		builder.append( TAB );
+		builder.append( bugFilePath );
 		builder.append( TAB );
 		builder.append( projectName );
 		builder.append( TAB );
-		builder.append( lineNum );
+		builder.append( bugLineNum );
 		builder.append( TAB );
-		builder.append( nodeStartChar );
+		builder.append( bugNodeStartChar );
 		builder.append( TAB );
-		builder.append( before );
+		builder.append( bugNodeLength );
 		builder.append( TAB );
-		builder.append( after );
+		builder.append( fixLineNum );
+		builder.append( TAB );
+		builder.append( fixNodeStartChar );
+		builder.append( TAB );
+		builder.append( fixNodeLength );
+		builder.append( TAB );
+		builder.append( sourceBeforeFix );
+		builder.append( TAB );
+		builder.append( sourceAfterFix );
 		builder.append( "\n" );
 		if ( getPatch ) {
-			builder.append( patch );
+			builder.append( fixPatch );
 			builder.append( "\n-----------------------------------------\n\n" );
 		}
 		
@@ -68,6 +93,10 @@ public class MinedBug {
 	}
 	
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public String toGson() {
 		Gson gson = new Gson();
 		final String JSON = gson.toJson(this);
@@ -75,32 +104,90 @@ public class MinedBug {
 	}
 	
 	
-	public String getPatch() {
-		return patch + "\n-----------------------------------------\n\n";
+	/**
+	 * 
+	 * @return
+	 */
+	public String getFixPatch() {
+		return fixPatch + "\n-----------------------------------------\n\n";
 	}
 	
-	public int getLineNum() {
-		return lineNum;
-	}
 	
-	public int getNodeStartChar() {
-		return nodeStartChar;
+	/**
+	 * 
+	 * @return
+	 */
+	public int getBugLineNum() {
+		return bugLineNum;
+	}
+
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getBugNodeStartChar() {
+		return bugNodeStartChar;
+	}
+
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getBugNodeLength() {
+		return bugNodeLength;
+	}
+
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getFixLineNum() {
+		return fixLineNum;
+	}
+
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getFixNodeStartChar() {
+		return fixNodeStartChar;
+	}
+
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getFixNodeLength() {
+		return fixNodeLength;
 	}
 
 
 	/**
 	 * @return the commitSHA1
 	 */
-	public String getCommitSHA1() {
-		return commitSHA1;
+	public String getFixCommitSHA1() {
+		return fixCommitSHA1;
+	}
+	
+	
+	/**
+	 * @return the commitSHA1
+	 */
+	public String getFixCommitParentSHA1() {
+		return fixCommitParentSHA1;
 	}
 
 
 	/**
 	 * @return the commitFile
 	 */
-	public String getCommitFile() {
-		return commitFile;
+	public String getBugFilePath() {
+		return bugFilePath;
 	}
 
 
@@ -115,16 +202,16 @@ public class MinedBug {
 	/**
 	 * @return the before
 	 */
-	public String getBefore() {
-		return before;
+	public String getSourceBeforeFix() {
+		return sourceBeforeFix;
 	}
 
 
 	/**
 	 * @return the after
 	 */
-	public String getAfter() {
-		return after;
+	public String getSourceAfterFix() {
+		return sourceAfterFix;
 	}
 	
 	
