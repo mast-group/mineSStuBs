@@ -1,8 +1,21 @@
 # SStuBs-mining
-Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.7488/ds/2528).
+Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.5281/zenodo.3653444).
 
 # Running the tool
+A precompiled version of the tool is available in the file miner.jar taht contains all the required dependencies.
+It can easily be run via the following command:
+```
 java -jar miner.jar PROJECTS_DIR DATASET_SAVE_DIR
+```
+PROJECTS_DIR must point to directory containing the Java repositories for mining.
+DATASET_SAVE_DIR must point to the directory in which the dataset will be saved.
+
+# Installation via Maven
+The tool can also easily be installed and built from source via maven.
+Maven will download all the required dependencies.
+Many thanks to Martin Monperrus for his help with this.
+**Important**
+
 
 # About the Dataset
 The ManySStuBs4J corpus contains simple statement bugs mined from open-source Java projects hosted in GitHub.\
@@ -22,29 +35,29 @@ We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).
 ## Corpus Statistics
 Projects | Bug Commits | Buggy Statements | Bug Statements per Commit | SStuBs
 ---------|-------------|------------------|---------------------------|-------------------------------------------
-100 Java Maven  |	  13000		   | 24412	|	          1.88    |  		7824
-100 Java	|  	  87000   	   | 5447	|	          1.77     |  		51537
+100 Java Maven  |	  12598		   | 25539	|	          2.03    |  		7824
+100 Java	|  	  86771   	   | 153652	|	          1.77     |  		51537
 
 
 ## SStuB Statistics
 Pattern Name	|	Instances|	Instances Large     
 ----------------|----------------|-----------------------
-| Change Idenfier Used  	|   3290	|      22773      	
-| Change Numeric Literal	|   1178   	|      5447       	
-| Change Boolean Literal	|   166	  	|      1841       	
-| Change Modifier       	|   1028   	|      5010       	
-| Wrong Function Name   	|   1491   	|      10179      	
-| Same Function More Args	|   807   	|      5100       	
-| Same Function Less Args	|   185   	|      1588       	
-| Same Function Change Caller	|   196   	|      1504       	
-| Same Function Swap Args	|   131   	|      612       	
-| Change Binary Operator	|   327   	|      2241       	
-| Change Unary Operator		|   174   	|      1016       	
-| Change Operand        	|   127   	|      807       	
-| Less Specific If      	|   220   	|      2813       	
-| More Specific If      	|   203   	|      2381       	
-| Missing Throws Exception	|   69   	|      206       	
-| Delete Throws Exception	|   47   	|      508       	
+| Change Idenfier Used  	|   3265	|      22668      	
+| Change Numeric Literal	|   1137   	|      5447       	
+| Change Boolean Literal	|   169	  	|      1842       	
+| Change Modifier       	|   1852   	|      5010       	
+| Wrong Function Name   	|   1486   	|      10179      	
+| Same Function More Args	|   758   	|      5100       	
+| Same Function Less Args	|   179   	|      1588       	
+| Same Function Change Caller	|   187   	|      1504       	
+| Same Function Swap Args	|   127   	|      612       	
+| Change Binary Operator	|   275   	|      2241       	
+| Change Unary Operator		|   170   	|      1016       	
+| Change Operand        	|   120   	|      807       	
+| Less Specific If      	|   215   	|      2813       	
+| More Specific If      	|   175   	|      2381       	
+| Missing Throws Exception	|   68   	|      206       	
+| Delete Throws Exception	|   48   	|      508       	
 
 
 ## Use
@@ -72,22 +85,34 @@ The corpus was collected for the work related to:
 100 Java Maven Project SStuBs				sstubs.json\
 1000 Java Project SStuBs				sstubsLarge.json\
 \
-All files can be loaded via any JSON library.
+Due to a bug zenodo returns an error when uploading json files.\
+The .json suffix can be restored by simply renaming the files (e.g. bugs -> bugs.json).
 
 
 ## JSON Fields
-The SStuBs contain the following fields:
+Each SStuB entry in the JSON files contains the following fields:
 
-"bugType"	:	The bug type (16 possible values)\
-"commitSHA1"	:	The hash of the commit fixing the bug.\
-"commitFile"	:	Path of the fixed file.\
-"patch"  	:	The diff of the change.\
-"projectName"	:	The concatenated repo owner and repo name separated by a '.'.\
-"lineNum"	:	The line in which the bug exists.\
-"nodeStartChar"	:	The character position at which the affected ASTNode starts.\
-"before"	:	The affected AST node text before the fix. (This field does not appear in some SStuB types for which it is not useful, e.g. Change Numeric Literal)\
-"after"		:	The affected AST node text after the fix. (This field does not appear in some SStuB types for which it is not useful, e.g. Change Numeric Literal)\
-\
+"bugType"		:	The bug type (16 possible values).\
+"commitSHA1"		:	The hash of the commit fixing the bug.  \
+"fixCommitParentSHA1"	:	The hash of the last commit containing the bug.\
+"commitFile"		:	Path of the fixed file.\
+"patch"  		:	The diff of the buggy and fixed file containing all the changes applied by the fix commit.\
+"projectName"		:	The concatenated repo owner and repo name separated by a '.'.\
+"bugLineNum"		:	The line in which the bug exists in the buggy version of the file.\
+"bugNodeStartChar"	:	The character index (i.e., the number of characters in the java file that must be read before encountering the first one of the AST node) at which the affected ASTNode starts in the buggy version of the file. \
+"bugNodeLength"		:	The length of the affected ASTNode in the buggy version of the file.\
+"fixLineNum"		:	The line in which the bug was fixed in the fixed version of the file.\
+"fixNodeStartChar"	:	The character index (i.e., the number of characters in the java file that must be read before encountering the first one of the AST node) at which the affected ASTNode starts in the fixed version of the file.\
+"fixNodeLength"		:	The length of the affected ASTNode in the fixed version of the file.\
+"before"		:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text before the fix.\
+"after"			:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text after the fix. \
+
+The "before", "after", "patch" fields help humans to understand the change.\
+The "bugLineNum", "bugNodeStartChar", "bugNodeLength", "fixLineNum", "fixNodeStartChar", and "fixNodeLength" allow pinpointing of the AST nodes and lines that contained the bug and their equivalent ones in the  fixed version of the file.\
+
 Similarly the bugs in bugs.json contain the above fields except bugType.\
 All bugs appearing in sstubs.json have also an entry in bugs.json.
 
+
+
+## Examples for Each SStuB Pattern
