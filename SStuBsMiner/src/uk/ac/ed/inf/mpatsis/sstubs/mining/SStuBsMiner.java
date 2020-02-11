@@ -2189,28 +2189,8 @@ public class SStuBsMiner {
 	public static void main(String[] args) throws Exception {
 		// Read the repository heads
 		final String topJProjectsPath = args[0];
-//		final String topJProjectsPath = "/home/mpatsis/src/programRepair/GithubRepos/topJProjects/";
-//		final String topJProjectsPath = "/disk/scratch1/mpatsis/topJavaProjects/";
-
-		Hashtable<String, String> repoHeads = null;
-		try {
-			FileInputStream fileIn = new FileInputStream( topJProjectsPath + "repoHeads.ser" );
-			ObjectInputStream ois = new ObjectInputStream( fileIn );
-			repoHeads = (Hashtable<String, String>) ois.readObject();
-			ois.close();
-			fileIn.close();
-			System.out.println( "Serialized data was loaded from repoHeads.ser" );
-		}
-		catch( IOException ioe ) {
-			out.println( ioe.getMessage() );
-		}
-		catch (ClassNotFoundException e) {
-			out.println( e.getMessage() );
-		}
-		
 		final File DATASET_EXPORT_DIR = new File(args[1]);
-//		final File DATASET_EXPORT_DIR = new File( "/home/mpatsis/src/programRepair/SStuBsDataset/" );
-//		final File DATASET_EXPORT_DIR = new File( "/disk/scratch1/mpatsis/JavaSStuBsDataset/" );
+
 		try {
 			if ( !DATASET_EXPORT_DIR.exists() ) DATASET_EXPORT_DIR.mkdir();
 		}
@@ -2230,7 +2210,6 @@ public class SStuBsMiner {
 			miner.mineSStuBs( repoDir.getAbsolutePath() );			
 			System.out.println( "Projects Mined: " + ++p );
 			System.gc();
-//			if ( p > 10 ) break;
 		}
 		
 		miner.saveToJSON();
