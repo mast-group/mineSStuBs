@@ -16,13 +16,13 @@ Maven will download all the required dependencies.\
 Many thanks to Martin Monperrus for his help with this.\
 **Important: A Maven version >= 3.2.3 is required since 15 January 2020 and onwards**\
 Maven will download the dependencies and build the project with the command:
-'''
+```
 mvn compile
-'''
+```
 To run the tool you can use the following command:
-'''
+```
 mvn exec:java -Dexec.mainClass=uk.ac.ed.inf.mpatsis.sstubs.mining.SStuBsMiner -Dexec.args="$PROJECTS_DIR DATASET_SAVE_DIR"
-'''
+```
 PROJECTS_DIR must point to directory containing the Java repositories for mining.
 DATASET_SAVE_DIR must point to the directory in which the dataset will be saved.
 
