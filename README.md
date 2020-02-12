@@ -124,5 +124,327 @@ Similarly the bugs in bugs.json contain the above fields except bugType.\
 All bugs appearing in sstubs.json have also an entry in bugs.json.
 
 
+# Examples for Each SStuB Pattern
+A quick overview of each SStuB pattern follows along with an example from the dataset 
+## Change Identifier Used
+This pattern checks whether an identifier appearing in some expression in the statement was replaced with an other one.
+It is easy for developers to by accident utilize a different
+identifier than the intended one that has the same type.
+Copy pasting code is a potential source of such errors.
+Identifiers with similar names may further contribute to the occurrence of such errors.\
+**Change Identifier Used** example patch:
+```diff
+diff --git a/common/src/main/java/com/google/auto/common/MoreTypes.java b/common/src/main/java/com/google/auto/common/MoreTypes.java
+index d0f40a9..1319092 100644
+--- a/common/src/main/java/com/google/auto/common/MoreTypes.java
++++ b/common/src/main/java/com/google/auto/common/MoreTypes.java
+@@ -738,7 +738,7 @@
+    * Returns a {@link WildcardType} if the {@link TypeMirror} represents a wildcard type or throws
+    * an {@link IllegalArgumentException}.
+    */
+-  public static WildcardType asWildcard(WildcardType maybeWildcardType) {
++  public static WildcardType asWildcard(TypeMirror maybeWildcardType) {
+     return maybeWildcardType.accept(WildcardTypeVisitor.INSTANCE, null);
+   }
+```
 
-## Examples for Each SStuB Pattern
+## Change Numeric Literal
+This pattern Checks whether a numeric literal was replaced with another one. 
+It is easy for developers to mix two numeric values in their program.\
+**Change Numeric Literal** example patch:
+```diff
+diff --git a/components/camel-pulsar/src/test/java/org/apache/camel/component/pulsar/PulsarConcurrentConsumerInTest.java b/components/camel-pulsar/src/test/java/org/apache/camel/component/pulsar/PulsarConcurrentConsumerInTest.java
+index dcd3a02..1d25f25 100644
+--- a/components/camel-pulsar/src/test/java/org/apache/camel/component/pulsar/PulsarConcurrentConsumerInTest.java
++++ b/components/camel-pulsar/src/test/java/org/apache/camel/component/pulsar/PulsarConcurrentConsumerInTest.java
+@@ -90,12 +90,12 @@
+     }
+ 
+     private PulsarClient concurrentPulsarClient() throws PulsarClientException {
+-        return new ClientBuilderImpl().serviceUrl(getPulsarBrokerUrl()).ioThreads(2).listenerThreads(5).build();
++        return new ClientBuilderImpl().serviceUrl(getPulsarBrokerUrl()).ioThreads(5).listenerThreads(5).build();
+     }
+```
+
+## Change Boolean Literal
+This pattern checks whether a Boolean literal was replaced.
+True is replaced with False and vice-versa. 
+In many cases developers use the opposite Boolean value than the intended one.\
+**Change Boolean Literal** example patch:
+```diff
+diff --git a/components/camel-sjms/src/main/java/org/apache/camel/component/sjms/jms/JmsObjectFactory.java b/components/camel-sjms/src/main/java/org/apache/camel/component/sjms/jms/JmsObjectFactory.java
+index 3ed3a24..382ed68 100644
+--- a/components/camel-sjms/src/main/java/org/apache/camel/component/sjms/jms/JmsObjectFactory.java
++++ b/components/camel-sjms/src/main/java/org/apache/camel/component/sjms/jms/JmsObjectFactory.java
+@@ -88,7 +88,8 @@
+             String messageSelector, 
+             boolean topic, 
+             String durableSubscriptionId) throws Exception {
+-        return createMessageConsumer(session, destinationName, messageSelector, topic, durableSubscriptionId, true);
++        // noLocal is default false accordingly to JMS spec
++        return createMessageConsumer(session, destinationName, messageSelector, topic, durableSubscriptionId, false);
+     }
+```
+
+## Change Modifier
+This pattern checks whether a variable, function, or class was declared with the wrong modifiers. 
+For example a developer can forget to declare one of the modifiers.\
+**Change Modifier** example patch:
+```diff
+diff --git a/src/test/java/com/puppycrawl/tools/checkstyle/BaseCheckTestSupport.java b/src/test/java/com/puppycrawl/tools/checkstyle/BaseCheckTestSupport.java
+index 67f89b8..c3b3ebf 100644
+--- a/src/test/java/com/puppycrawl/tools/checkstyle/BaseCheckTestSupport.java
++++ b/src/test/java/com/puppycrawl/tools/checkstyle/BaseCheckTestSupport.java
+@@ -100,7 +100,7 @@
+                 + filename).getCanonicalPath();
+     }
+ 
+-    protected void verifyAst(String expectedTextPrintFileName, String actualJavaFileName)
++    protected static void verifyAst(String expectedTextPrintFileName, String actualJavaFileName)
+             throws Exception {
+         verifyAst(expectedTextPrintFileName, actualJavaFileName, false);
+     }
+```
+
+## Wrong Function Name
+This pattern checks whether the wrong function was called. 
+Functions with similar names and the same signature are usual pitfall for developers.\
+**Wrong Function Name** example patch:
+```diff
+diff --git a/modules/DesktopDataLaboratory/src/main/java/org/gephi/desktop/datalab/ConfigurationPanel.java b/modules/DesktopDataLaboratory/src/main/java/org/gephi/desktop/datalab/ConfigurationPanel.java
+index f28c614..f295bd3 100644
+--- a/modules/DesktopDataLaboratory/src/main/java/org/gephi/desktop/datalab/ConfigurationPanel.java
++++ b/modules/DesktopDataLaboratory/src/main/java/org/gephi/desktop/datalab/ConfigurationPanel.java
+@@ -130,7 +130,7 @@
+     }
+ 
+     private boolean canChangeTimeRepresentation(GraphModel graphModel) {
+-        if (graphModel.getGraph().getEdgeCount() > 0) {
++        if (graphModel.getGraph().getNodeCount() > 0) {
+             return false;//Graph has to be empty
+         }
+```
+
+## Same Function More Args
+This pattern checks whether an overloaded version of the function with more arguments was called. 
+Functions with multiple overload can often confuse developers.\
+**Same Function More Args** example patch:
+```diff
+diff --git a/ee/src/main/java/org/jboss/as/ee/component/ComponentDescription.java b/ee/src/main/java/org/jboss/as/ee/component/ComponentDescription.java
+index f9b99d2..76f83cc 100644
+--- a/ee/src/main/java/org/jboss/as/ee/component/ComponentDescription.java
++++ b/ee/src/main/java/org/jboss/as/ee/component/ComponentDescription.java
+@@ -543,7 +543,7 @@
+                     configuration.getModuleName(),
+                     configuration.getApplicationName()
+             );
+-            injectionConfiguration.getSource().getResourceValue(serviceBuilder, context, managedReferenceFactoryValue);
++            injectionConfiguration.getSource().getResourceValue(resolutionContext, serviceBuilder, context, managedReferenceFactoryValue);
+         }
+     }
+ }
+```
+
+## Same Function Less Args
+This pattern checks whether an overloaded version of the function with less arguments was called. 
+For instance, a developer can forget to specify one of the arguments and not realize it if the code still compiles due to function overloading.\
+**Same Function Less Args** example patch:
+```diff
+diff --git a/src/main/java/com/zaxxer/hikari/pool/HikariPool.java b/src/main/java/com/zaxxer/hikari/pool/HikariPool.java
+index 19b49e7..3a87b7f 100644
+--- a/src/main/java/com/zaxxer/hikari/pool/HikariPool.java
++++ b/src/main/java/com/zaxxer/hikari/pool/HikariPool.java
+@@ -167,7 +167,7 @@
+             final long now = clockSource.currentTime();
+             if (poolEntry.evict || (clockSource.elapsedMillis(poolEntry.lastAccessed, now) > ALIVE_BYPASS_WINDOW_MS && !isConnectionAlive(poolEntry.connection))) {
+                closeConnection(poolEntry, \"(connection evicted or dead)\"); // Throw away the dead connection and try again
+-               timeout = hardTimeout - clockSource.elapsedMillis(startTime, now);
++               timeout = hardTimeout - clockSource.elapsedMillis(startTime);
+             }
+             else {
+                metricsTracker.recordBorrowStats(poolEntry, startTime);
+```
+
+## Same Function Change Caller
+This pattern checks whether in a function call expression the caller object for it was replaced with another one.
+When there are multiple variables with the same type a developer can accidentally perform an operation.
+Copy pasting code is a potential source of such errors.
+Variables with similar names can also further contribute to the occurrence of such errors.\
+**Same Function Change Caller** example patch:
+```diff
+diff --git a/metrics-servlet/src/test/java/com/yammer/metrics/reporting/tests/AdminServletTest.java b/metrics-servlet/src/test/java/com/yammer/metrics/reporting/tests/AdminServletTest.java
+index e9d1b4e..4f8601e
+--- a/metrics-servlet/src/test/java/com/yammer/metrics/reporting/tests/AdminServletTest.java
++++ b/metrics-servlet/src/test/java/com/yammer/metrics/reporting/tests/AdminServletTest.java
+@@ -42,7 +42,7 @@
+ 
+     @Before
+     public void setUp() throws Exception {
+-        when(context.getContextPath()).thenReturn(\"/context\");
++        when(request.getContextPath()).thenReturn(\"/context\");
+ 
+         when(config.getServletContext()).thenReturn(context);
+```
+
+## Same Function Swap Args
+This pattern checks whether a function was called with two of its arguments swapped. 
+When multiple arguments of a function are of the same type, if developers do not accurately remember what each argument represents then they can easily swap two such arguments without realizing it.\
+**Same Function Swap Args** example patch:
+```diff
+diff --git a/servers/src/main/java/tachyon/master/BlockInfo.java b/servers/src/main/java/tachyon/master/BlockInfo.java
+index 10f3b21..ec659db 100644
+--- a/servers/src/main/java/tachyon/master/BlockInfo.java
++++ b/servers/src/main/java/tachyon/master/BlockInfo.java
+@@ -187,7 +187,8 @@
+           } catch (NumberFormatException nfe) {
+             continue;
+           }
+-          ret.add(new NetAddress(resolvedHost, resolvedPort, -1));
++          // The resolved port is the data transfer port not the rpc port
++          ret.add(new NetAddress(resolvedHost, -1, resolvedPort));
+         }
+       }
+     }
+```
+
+## Change Binary Operator
+This pattern checks whether a binary operand was accidentally replaced with another one of the same type.
+For example, developers very often mix comparison operators in expressions.\
+**Change Binary Operator** example patch:
+```diff
+diff --git a/core/server/worker/src/main/java/alluxio/worker/netty/DataServerReadHandler.java b/core/server/worker/src/main/java/alluxio/worker/netty/DataServerReadHandler.java
+index 97a07fa..195d89a 100644
+--- a/core/server/worker/src/main/java/alluxio/worker/netty/DataServerReadHandler.java
++++ b/core/server/worker/src/main/java/alluxio/worker/netty/DataServerReadHandler.java
+@@ -393,7 +393,7 @@
+     @GuardedBy(\"mLock\")
+     private boolean shouldRestartPacketReader() {
+       return !mPacketReaderActive && !tooManyPendingPackets() && mPosToQueue < mRequest.mEnd
+-          && mError != null && !mCancel && !mEof;
++          && mError == null && !mCancel && !mEof;
+     }
+   }
+```
+
+
+## Change Unary Operator
+This pattern checks whether a unary operand was accidentally replaced with another one of the same type.
+For example, developers very often may forget the ! operator in a boolean expression.\
+**Change Unary Operator** example patch:
+```diff
+diff --git a/core/client/src/main/java/alluxio/client/file/FileInStream.java b/core/client/src/main/java/alluxio/client/file/FileInStream.java
+index b263009..5592db2 100644
+--- a/core/client/src/main/java/alluxio/client/file/FileInStream.java
++++ b/core/client/src/main/java/alluxio/client/file/FileInStream.java
+@@ -454,7 +454,7 @@
+ 
+     // If this block is read from a remote worker but we don't have a local worker, don't cache
+     if (mCurrentBlockInStream instanceof RemoteBlockInStream
+-        && BlockStoreContext.INSTANCE.hasLocalWorker()) {
++        && !BlockStoreContext.INSTANCE.hasLocalWorker()) {
+       return;
+     }
+```
+
+## Change Operand
+This pattern checks whether one of the operands in a binary operation was wrong.\
+**Change Operand** example patch:
+```diff
+diff --git a/modules/VisualizationImpl/src/main/java/org/gephi/visualization/swing/StandardGraphIO.java b/modules/VisualizationImpl/src/main/java/org/gephi/visualization/swing/StandardGraphIO.java
+index fd49c8a..67b74a9 100644
+--- a/modules/VisualizationImpl/src/main/java/org/gephi/visualization/swing/StandardGraphIO.java
++++ b/modules/VisualizationImpl/src/main/java/org/gephi/visualization/swing/StandardGraphIO.java
+@@ -470,7 +470,7 @@
+         float newCameraLocation = Math.max(newCameraLocationX, newCameraLocationY);
+ 
+         graphDrawable.cameraLocation[0] = limits.getMinXoctree() + graphWidth / 2;
+-        graphDrawable.cameraLocation[1] = limits.getMinYoctree() + graphWidth / 2;
++        graphDrawable.cameraLocation[1] = limits.getMinYoctree() + graphHeight / 2;
+         graphDrawable.cameraLocation[2] = newCameraLocation;
+ 
+         graphDrawable.cameraTarget[0] = graphDrawable.cameraLocation[0];
+```
+
+## More Specific If
+This pattern checks whether an extra condition (&& operand) was added in an if statement’s condition.\
+**More Specific If** example patch:
+```diff
+diff --git a/hazelcast/src/main/java/com/hazelcast/impl/ConcurrentMapManager.java b/hazelcast/src/main/java/com/hazelcast/impl/ConcurrentMapManager.java
+index b01c711..85eb787 100644
+--- a/hazelcast/src/main/java/com/hazelcast/impl/ConcurrentMapManager.java
++++ b/hazelcast/src/main/java/com/hazelcast/impl/ConcurrentMapManager.java
+@@ -546,7 +546,7 @@
+         }
+         for (Future\u003cPairs\u003e future : lsFutures) {
+             Pairs pairs = future.get();
+-            if (pairs != null) {
++            if (pairs != null && pairs.getKeyValues()!=null) {
+                 for (KeyValue keyValue : pairs.getKeyValues()) {
+                     results.addKeyValue(keyValue);
+                 }
+```
+
+## Less Specific If
+This pattern checks whether an extra condition which either this or the original one needs to hold (∥ operand) was added in
+an if statement’s condition.\
+**Less Specific If** example patch:
+```diff
+diff --git a/modules/swagger-core/src/main/java/io/swagger/v3/core/jackson/ModelResolver.java b/modules/swagger-core/src/main/java/io/swagger/v3/core/jackson/ModelResolver.java
+index baea6e8..aeca799 100644
+--- a/modules/swagger-core/src/main/java/io/swagger/v3/core/jackson/ModelResolver.java
++++ b/modules/swagger-core/src/main/java/io/swagger/v3/core/jackson/ModelResolver.java
+@@ -999,7 +999,7 @@
+                 }
+             }
+         }
+-        if (subtypeProps.isEmpty()) {
++        if (subtypeProps == null || subtypeProps.isEmpty()) {
+             child.setProperties(null);
+         }
+     }
+```
+
+## Missing Throws Exception
+This pattern checks whether the fix added a throws clause in a function declaration.\
+**Missing Throws Exception** example patch:
+```diff
+diff --git a/example/src/main/java/io/netty/example/securechat/SecureChatServer.java b/example/src/main/java/io/netty/example/securechat/SecureChatServer.java
+index 6dad108..19a9dac 100644
+--- a/example/src/main/java/io/netty/example/securechat/SecureChatServer.java
++++ b/example/src/main/java/io/netty/example/securechat/SecureChatServer.java
+@@ -31,7 +31,7 @@
+         this.port \u003d port;
+     }
+ 
+-    public void run() {
++    public void run() throws InterruptedException {
+         ServerBootstrap b \u003d new ServerBootstrap();
+         try {
+             b.eventLoop(new NioEventLoop(), new NioEventLoop())
+```
+
+## Delete Throws Exception
+This pattern checks whether the fix deleted an throws clause in a function declaration.\
+**Delete Throws Exception** example patch:
+```diff
+diff --git a/core/server/src/main/java/tachyon/web/WebInterfaceAbstractMetricsServlet.java b/core/server/src/main/java/tachyon/web/WebInterfaceAbstractMetricsServlet.java
+index 23ae5cd..2773882 100644
+--- a/core/server/src/main/java/tachyon/web/WebInterfaceAbstractMetricsServlet.java
++++ b/core/server/src/main/java/tachyon/web/WebInterfaceAbstractMetricsServlet.java
+@@ -43,13 +43,12 @@
+   }
+ 
+   /**
+-   * Populates key, value pairs for UI display.
++   * Populates operation metrics for displaying in the UI
+    *
+    * @param request The {@link HttpServletRequest} object
+-   * @throws IOException if an I/O error occurs
+    */
+   protected void populateCountersValues(Map<String, Metric> operations,
+-      Map<String, Counter> rpcInvocations, HttpServletRequest request) throws IOException {
++      Map<String, Counter> rpcInvocations, HttpServletRequest request){
+ 
+     for (Map.Entry<String, Metric> entry : operations.entrySet()) {
+       if (entry.getValue() instanceof Gauge) {
+```
