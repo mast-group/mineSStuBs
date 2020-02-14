@@ -43,7 +43,7 @@ This method has also been used before to extract bug datasets (Ray et al., 2015;
 \
 The bugs are stored in a JSON file (each version of the dataset has each own instance of this file).\
 Any bugs that fit one of 16 patterns are also annotated by which pattern(s) they fit in a separate JSON file (each version of the dataset has each own instance of this file).\
-We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).\
+We refer to bugs that fit any of the 16 patterns as simple stupid bugs (SStuBs).
 
 
 ## Corpus Statistics
@@ -119,12 +119,12 @@ The files sstubs.json and sstubsLarge.json contain the following fields:
 "fixNodeStartChar"	:	The character index (i.e., the number of characters in the java file that must be read before encountering the first one of the AST node) at which the affected ASTNode starts in the fixed version of the file.\
 "fixNodeLength"		:	The length of the affected ASTNode in the fixed version of the file.\
 "sourceBeforeFix"	:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text before the fix.\
-"sourceAfterFix"	:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text after the fix. \
+"sourceAfterFix"	:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text after the fix. 
 
 The "sourceBeforeFix", "sourceAfterFix", "patch" fields help humans to understand the change.\
-The "sourceBeforeFix", "sourceAfterFix", "patch" fields are currently not available for the Missing Throws Exception and Delete Throws Exception patterns due to a bug.\\
-We have fixed this and we will provide an updated version.\\
-The "bugLineNum", "bugNodeStartChar", "bugNodeLength", "fixLineNum", "fixNodeStartChar", and "fixNodeLength" allow pinpointing of the AST nodes and lines that contained the bug and their equivalent ones in the  fixed version of the file.\
+The "sourceBeforeFix", "sourceAfterFix", "patch" fields are currently not available for the Missing Throws Exception and Delete Throws Exception patterns due to a bug.\
+We have fixed this and we will provide an updated version.\
+The "bugLineNum", "bugNodeStartChar", "bugNodeLength", "fixLineNum", "fixNodeStartChar", and "fixNodeLength" allow pinpointing of the AST nodes and lines that contained the bug and their equivalent ones in the  fixed version of the file.
 
 Similarly the bugs in bugs.json contain the above fields except bugType.\
 All bugs appearing in sstubs.json have also an entry in bugs.json.
