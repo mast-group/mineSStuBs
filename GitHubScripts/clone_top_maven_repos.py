@@ -34,6 +34,8 @@ def main():
 	projects_list_file = sys.argv[1]
 	dataset_folder = sys.argv[2]
 	projects_num_to_download = int(sys.argv[3])
+	git_username = sys.argv[4]
+	git_passwd = sys.argv[5]
 	for project_url in project_url_generator( projects_list_file, projects_num_to_download ):
 		print 'Downloading project:', get_project_repo_name( project_url )
 		project_dir = '%s/%s' % (dataset_folder, get_project_repo_name( project_url ))
