@@ -2,7 +2,7 @@
 Hosts our tool for mining simple "stupid" bugs (SStuBs) that was used to mine the [ManySStuBs4J dataset](https://doi.org/10.5281/zenodo.3653444).
 
 # Running the tool
-A precompiled version of the tool is available in the file miner.jar taht contains all the required dependencies.
+A precompiled version of the tool is available in the file miner.jar that contains all the required dependencies.
 It can easily be run via the following command:
 ```
 java -jar miner.jar PROJECTS_DIR DATASET_SAVE_DIR
@@ -34,7 +34,7 @@ These are single statement fixes, classified where possible into one of 16 synta
 The dataset contains simple statement bugs mined from open-source Java projects hosted in GitHub.\
 There are two variants of the dataset. One mined from the 100 Java Maven Projects and one mined from the top 1000 Java Projects.\
 A project's popularity is determined by computing the sum of z-scores of its forks and watchers.\
-We kept only bug commits that contain only single statement changes and ignore stylistic differences such as spaces or empty as well as differences in comments.\
+We kept only bug commits that contain only single statement changes and ignored stylistic differences such as spaces or empty as well as differences in comments.\
 Some single statement changes can be caused by refactorings, like changing a variable name rather than bug fixes.\
 We attempted to detect and exclude refactorings such as variable, function, and class renamings, function argument renamings or changing the number of arguments in a function.\
 The commits are classified as bug fixes or not by checking if the commit message contains any of a set of predetermined keywords such as bug, fix, fault etc.\
