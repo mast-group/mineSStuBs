@@ -107,10 +107,10 @@ The .json suffix can be restored by simply renaming the files (e.g. bugs -> bugs
 The files sstubs.json and sstubsLarge.json contain the following fields:
 
 "bugType"		:	The bug type (16 possible values).\
-"commitSHA1"		:	The hash of the commit fixing the bug.  \
+"fixCommitSHA1"		:	The hash of the commit fixing the bug.  \
 "fixCommitParentSHA1"	:	The hash of the last commit containing the bug.\
-"commitFile"		:	Path of the fixed file.\
-"patch"  		:	The diff of the buggy and fixed file containing all the changes applied by the fix commit.\
+"bugFilePath"		:	Path of the fixed file.\
+"fixPatch"  		:	The diff of the buggy and fixed file containing all the changes applied by the fix commit.\
 "projectName"		:	The concatenated repo owner and repo name separated by a '.'.\
 "bugLineNum"		:	The line in which the bug exists in the buggy version of the file.\
 "bugNodeStartChar"	:	The character index (i.e., the number of characters in the java file that must be read before encountering the first one of the AST node) at which the affected ASTNode starts in the buggy version of the file. \
@@ -121,8 +121,8 @@ The files sstubs.json and sstubsLarge.json contain the following fields:
 "sourceBeforeFix"	:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text before the fix.\
 "sourceAfterFix"	:	The affected AST's tree (sometimes subtree  e.g. Change Numeric Literal) text after the fix. 
 
-The "sourceBeforeFix", "sourceAfterFix", "patch" fields help humans to understand the change.\
-The "sourceBeforeFix", "sourceAfterFix", "patch" fields are currently not available for the Missing Throws Exception and Delete Throws Exception patterns due to a bug.\
+The "sourceBeforeFix", "sourceAfterFix", "fixPatch" fields help humans to understand the change.\
+The "sourceBeforeFix", "sourceAfterFix", "fixPatch" fields are currently not available for the Missing Throws Exception and Delete Throws Exception patterns due to a bug.\
 We have fixed this and we will provide an updated version.\
 The "bugLineNum", "bugNodeStartChar", "bugNodeLength", "fixLineNum", "fixNodeStartChar", and "fixNodeLength" allow pinpointing of the AST nodes and lines that contained the bug and their equivalent ones in the  fixed version of the file.
 
