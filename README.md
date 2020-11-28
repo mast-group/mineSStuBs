@@ -232,8 +232,8 @@ index f28c614..f295bd3 100644
 ```
 
 ## Same Function More Args
-This pattern checks whether an overloaded version of the function with more arguments was called. 
-Functions with multiple overload can often confuse developers.\
+This pattern checks whether an overloaded version of the function with less arguments was called. 
+For instance, a developer can forget to specify one of the arguments and not realize it if the code still compiles due to function overloading.\
 **Same Function More Args** example patch:
 ```diff
 diff --git a/ee/src/main/java/org/jboss/as/ee/component/ComponentDescription.java b/ee/src/main/java/org/jboss/as/ee/component/ComponentDescription.java
@@ -252,8 +252,8 @@ index f9b99d2..76f83cc 100644
 ```
 
 ## Same Function Less Args
-This pattern checks whether an overloaded version of the function with less arguments was called. 
-For instance, a developer can forget to specify one of the arguments and not realize it if the code still compiles due to function overloading.\
+This pattern checks whether an overloaded version of the function with more arguments was called. 
+Functions with multiple overload can often confuse developers.\
 **Same Function Less Args** example patch:
 ```diff
 diff --git a/src/main/java/com/zaxxer/hikari/pool/HikariPool.java b/src/main/java/com/zaxxer/hikari/pool/HikariPool.java
