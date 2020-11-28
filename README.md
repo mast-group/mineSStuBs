@@ -131,8 +131,8 @@ All bugs appearing in sstubs.json have also an entry in bugs.json.
 
 
 # Examples for Each SStuB Pattern
-A quick overview of each SStuB pattern follows along with an example from the dataset 
-## Change Identifier Used
+A quick overview of each SStuB pattern follows along with an example from the dataset. Names in the parentheses are the bug types used in the dataset for each pattern.
+## Change Identifier Used (`CHANGE_IDENTIFIER`)
 This pattern checks whether an identifier appearing in some expression in the statement was replaced with an other one.
 It is easy for developers to by accident utilize a different
 identifier than the intended one that has the same type.
@@ -154,7 +154,7 @@ index d0f40a9..1319092 100644
    }
 ```
 
-## Change Numeric Literal
+## Change Numeric Literal (`CHANGE_NUMERAL`)
 This pattern Checks whether a numeric literal was replaced with another one. 
 It is easy for developers to mix two numeric values in their program.\
 **Change Numeric Literal** example patch:
@@ -172,7 +172,7 @@ index dcd3a02..1d25f25 100644
      }
 ```
 
-## Change Boolean Literal
+## Change Boolean Literal (`SWAP_BOOLEAN_LITERAL`)
 This pattern checks whether a Boolean literal was replaced.
 True is replaced with False and vice-versa. 
 In many cases developers use the opposite Boolean value than the intended one.\
@@ -192,7 +192,7 @@ index 3ed3a24..382ed68 100644
      }
 ```
 
-## Change Modifier
+## Change Modifier (`CHANGE_MODIFIER`)
 This pattern checks whether a variable, function, or class was declared with the wrong modifiers. 
 For example a developer can forget to declare one of the modifiers.\
 **Change Modifier** example patch:
@@ -212,7 +212,7 @@ index 67f89b8..c3b3ebf 100644
      }
 ```
 
-## Wrong Function Name
+## Wrong Function Name (`DIFFERENT_METHOD_SAME_ARGS`)
 This pattern checks whether the wrong function was called. 
 Functions with similar names and the same signature are usual pitfall for developers.\
 **Wrong Function Name** example patch:
@@ -231,7 +231,7 @@ index f28c614..f295bd3 100644
          }
 ```
 
-## Same Function More Args
+## Same Function More Args (`OVERLOAD_METHOD_MORE_ARGS`)
 This pattern checks whether an overloaded version of the function with more arguments was called. 
 Functions with multiple overload can often confuse developers.\
 **Same Function More Args** example patch:
@@ -251,7 +251,7 @@ index f9b99d2..76f83cc 100644
  }
 ```
 
-## Same Function Less Args
+## Same Function Less Args (`OVERLOAD_METHOD_DELETED_ARGS`)
 This pattern checks whether an overloaded version of the function with less arguments was called. 
 For instance, a developer can forget to specify one of the arguments and not realize it if the code still compiles due to function overloading.\
 **Same Function Less Args** example patch:
@@ -271,7 +271,7 @@ index 19b49e7..3a87b7f 100644
                 metricsTracker.recordBorrowStats(poolEntry, startTime);
 ```
 
-## Same Function Change Caller
+## Same Function Change Caller (`CHANGE_CALLER_IN_FUNCTION_CALL`)
 This pattern checks whether in a function call expression the caller object for it was replaced with another one.
 When there are multiple variables with the same type a developer can accidentally perform an operation.
 Copy pasting code is a potential source of such errors.
@@ -292,7 +292,7 @@ index e9d1b4e..4f8601e
          when(config.getServletContext()).thenReturn(context);
 ```
 
-## Same Function Swap Args
+## Same Function Swap Args (`SWAP_ARGUMENTS`)
 This pattern checks whether a function was called with two of its arguments swapped. 
 When multiple arguments of a function are of the same type, if developers do not accurately remember what each argument represents then they can easily swap two such arguments without realizing it.\
 **Same Function Swap Args** example patch:
@@ -313,7 +313,7 @@ index 10f3b21..ec659db 100644
      }
 ```
 
-## Change Binary Operator
+## Change Binary Operator (`CHANGE_OPERATOR`)
 This pattern checks whether a binary operand was accidentally replaced with another one of the same type.
 For example, developers very often mix comparison operators in expressions.\
 **Change Binary Operator** example patch:
@@ -333,7 +333,7 @@ index 97a07fa..195d89a 100644
 ```
 
 
-## Change Unary Operator
+## Change Unary Operator (`CHANGE_UNARY_OPERATOR`)
 This pattern checks whether a unary operand was accidentally replaced with another one of the same type.
 For example, developers very often may forget the ! operator in a boolean expression.\
 **Change Unary Operator** example patch:
@@ -352,7 +352,7 @@ index b263009..5592db2 100644
      }
 ```
 
-## Change Operand
+## Change Operand (`CHANGE_OPERAND`)
 This pattern checks whether one of the operands in a binary operation was wrong.\
 **Change Operand** example patch:
 ```diff
@@ -371,7 +371,7 @@ index fd49c8a..67b74a9 100644
          graphDrawable.cameraTarget[0] = graphDrawable.cameraLocation[0];
 ```
 
-## More Specific If
+## More Specific If (`MORE_SPECIFIC_IF`)
 This pattern checks whether an extra condition (&& operand) was added in an if statement’s condition.\
 **More Specific If** example patch:
 ```diff
@@ -390,7 +390,7 @@ index b01c711..85eb787 100644
                  }
 ```
 
-## Less Specific If
+## Less Specific If (`LESS_SPECIFIC_IF`)
 This pattern checks whether an extra condition which either this or the original one needs to hold (∥ operand) was added in
 an if statement’s condition.\
 **Less Specific If** example patch:
@@ -410,7 +410,7 @@ index baea6e8..aeca799 100644
      }
 ```
 
-## Missing Throws Exception
+## Missing Throws Exception (`ADD_THROWS_EXCEPTION`)
 This pattern checks whether the fix added a throws clause in a function declaration.\
 **Missing Throws Exception** example patch:
 ```diff
@@ -429,7 +429,7 @@ index 6dad108..19a9dac 100644
              b.eventLoop(new NioEventLoop(), new NioEventLoop())
 ```
 
-## Delete Throws Exception
+## Delete Throws Exception (`DELETE_THROWS_EXCEPTION`)
 This pattern checks whether the fix deleted an throws clause in a function declaration.\
 **Delete Throws Exception** example patch:
 ```diff
