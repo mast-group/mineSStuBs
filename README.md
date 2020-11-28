@@ -131,7 +131,7 @@ All bugs appearing in sstubs.json have also an entry in bugs.json.
 
 
 # Examples for Each SStuB Pattern
-A quick overview of each SStuB pattern follows along with an example from the dataset 
+A quick overview of each SStuB pattern follows along with an example from the dataset. Names in the parentheses are the bug types used in the dataset for each pattern.
 ## Change Identifier Used (`CHANGE_IDENTIFIER`)
 This pattern checks whether an identifier appearing in some expression in the statement was replaced with an other one.
 It is easy for developers to by accident utilize a different
